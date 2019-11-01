@@ -2,23 +2,30 @@
 type coor = string
 
 module type Ship = sig
-  type t = (coor * bool) list
+  type t
+  val taken : string list ref
   val empty : t
   val is_empty: t -> bool
+  val size : t -> int
   val insert: coor -> t -> t
   val remove: coor -> t -> t
-  val create : t
-  val hit : coor -> t -> unit
+  val create : coor list -> t
+  val hit : coor -> t -> t
   val alive : t -> bool
 end
 
 module ShipMaker = struct
   type t = (coor * bool) list
 
+  let taken = ref []
+
   let empty = []
 
-  let is_empty t =
-    t = []
+  let is_empty s =
+    s = []
+
+  let size s =
+    List.length s
 
   let rec insert coor = function
     | [] -> [(coor, true)]
@@ -47,5 +54,3 @@ module ShipMaker = struct
     | [] -> false
     | (s, b)::t -> if b then true else alive t
 end
-
-let bigShip = ShipMaker.create ["A1"; "B1"]
