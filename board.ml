@@ -1,5 +1,5 @@
 
-open ShipMaker
+open Ship
 
 module Board = struct
 
