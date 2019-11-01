@@ -18,6 +18,8 @@ module type Player = sig
 end
 
 module PlayerMaker = struct 
+
+
   type t = {ships: ShipMaker.t list;
             board: Board.t;
             ships_alive: int;
@@ -35,6 +37,13 @@ module PlayerMaker = struct
     if t.ships_alive = 0 then false else true
 
   let get_ships t = t.ships
+
+  let update_ship t ship = 
+
+    (** NOT DONE *)
+    List.fold_left (fun accum el -> 
+        if ShipMaker.alive el then accum+1 else accum) 0 t.ships
+
 
 
 
