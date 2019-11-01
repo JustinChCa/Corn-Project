@@ -1,10 +1,16 @@
 
-open ShipMaker
+open Ship
 
 module Board = struct
 
-  type opt = Miss | Hit | Water of ShipMaker.t option
+  type opt = Miss | Hit | Water of Ship.Ship option
 
+  let opt_to_str x = 
+    match x with
+    |Miss -> print_string "|x"
+    |Hit -> print_string "|o"
+    |Water None -> print_string "| "
+    |Water Some _ -> print_string "|s"
 
   (**AF: The array [| r1; r2; r3; r4;... |] is the array of the row arrays
      ri = [|ai1; ai2; ai3; ai4; ... |] which represents the elements in left to 
@@ -29,17 +35,37 @@ module Board = struct
           end
       end
 
-  let dis_board b = 
-    failwith "unimplemented"
+  let rec h_partition str n = 
+    if n > 0 then h_partition (str^"==") (n-1) else str
 
-  (** [columns b] gives the number of columns in the board [b]. This is equal to
-      the size of each row in [b] *)
-  let columns b = Array.length b.(1)
+  let opt_to_str x = 
+    match x with
+    |Miss -> print_string "|x"
+    |Hit -> print_string "|o"
+    |Water None -> print_string "| "
+    |Water Some _ -> print_string "|s"
+
+  let dis_row r =
+    Array.iter opt_to_str r
+      print_endline "|"
+
+  let dis_board fmt b = 
+    let partition = h_partition "" (Array.length b.(1)) in 
+    print_string partition
+
+      Array.iter (
 
 
-  (** [rows b] gives the number of rows in the board [b]. This is equal to the
-      size of each column in [b]  *)
-  let rows b = Array.length b
+
+
+      (** [columns b] gives the number of columns in the board [b]. This is equal to
+          the size of each row in [b] *)
+      let columns b = Array.length b.(1)
+
+
+      (** [rows b] gives the number of rows in the board [b]. This is equal to the
+          size of each column in [b]  *)
+      let rows b = Array.length b
 
 
 end
