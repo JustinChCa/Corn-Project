@@ -1,17 +1,40 @@
-module type Ship = sig
-  type t
-  val empty : t
-  val create : t
-  val hit : string -> t -> unit
-  val alive : t -> bool
-end
 
 type coor = string
+
+module type Ship = sig
+  type t = (coor * bool) list
+  val empty : t
+  val is_empty: t -> bool
+  val insert: coor -> t -> t
+  val remove: coor -> t -> t
+  val create : t
+  val hit : coor -> t -> unit
+  val alive : t -> bool
+end
 
 module ShipMaker = struct
   type t = (coor * bool) list
 
   let empty = []
+
+  let is_empty t =
+    t = []
+
+  let rec insert coor = function
+    | [] -> [(coor, true)]
+    | (c,b)::t -> 
+      match Stdlib.compare c coor with
+      | 0 -> (c,b)::t
+      | x when x>0 -> (c,b)::insert coor t
+      | _ -> (coor, true)::(c,b)::t
+
+  let rec remove coor = function
+    | [] -> []
+    | (c,b)::t ->
+      match Stdlib.compare c coor with
+      | 0 -> t
+      | x when x>0 -> (c,b)::remove coor t
+      | _ -> (c,b)::t
 
   let create (lst:coor list) =
     List.map (fun x -> (x, true)) lst
