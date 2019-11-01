@@ -3,7 +3,7 @@ open Ship
 
 module Board = struct
 
-  type opt = Miss | Hit | Water of Ship.Ship option
+  type opt = Miss | Hit | Water of ShipMaker.t option
 
   let opt_to_str x = 
     match x with
@@ -38,6 +38,7 @@ module Board = struct
   let rec h_partition str n = 
     if n > 0 then h_partition (str^"==") (n-1) else str
 
+
   let opt_to_str x = 
     match x with
     |Miss -> print_string "|x"
@@ -45,27 +46,28 @@ module Board = struct
     |Water None -> print_string "| "
     |Water Some _ -> print_string "|s"
 
-  let dis_row r =
-    Array.iter opt_to_str r
-      print_endline "|"
+
+  let dis_row str r =
+    Array.iter opt_to_str r;
+    print_endline "|";
+    print_endline str;;
+
 
   let dis_board fmt b = 
-    let partition = h_partition "" (Array.length b.(1)) in 
-    print_string partition
-
-      Array.iter (
-
+    let partition = h_partition "" (Array.length b.(1)) in
+    print_string partition;
+    Array.iter (dis_row partition) b;;
 
 
 
-      (** [columns b] gives the number of columns in the board [b]. This is equal to
-          the size of each row in [b] *)
-      let columns b = Array.length b.(1)
+  (** [columns b] gives the number of columns in the board [b]. This is equal to
+      the size of each row in [b] *)
+  let columns b = Array.length b.(1)
 
 
-      (** [rows b] gives the number of rows in the board [b]. This is equal to the
-          size of each column in [b]  *)
-      let rows b = Array.length b
+  (** [rows b] gives the number of rows in the board [b]. This is equal to the
+      size of each column in [b]  *)
+  let rows b = Array.length b
 
 
 end
