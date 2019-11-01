@@ -14,7 +14,9 @@ module Board = struct
   type t = (opt array) array 
 
   (** [hit b pair] augments the board [b] based on an attack on the
-      coordinates [pair]. *)
+      coordinates [pair]. Returns a message that the player has already
+      attacked an area if they input that coordinate; the plyaer will not get 
+      another turn if they do. *)
   let hit (b:t) (pair:int*int) : unit = 
     match pair with
     |(r, c) -> begin
