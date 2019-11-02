@@ -1,9 +1,9 @@
 
-type coor = string
+type coor = int*int
 
 module type Ship = sig
   type t
-  val taken : string list ref
+  val taken : int*int list ref
   val empty : t
   val is_empty: t -> bool
   val size : t -> int

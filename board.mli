@@ -7,6 +7,8 @@ module type Board = sig
   (** the type implementation of the board, an opt array array. *)
   type t 
 
+  val make_board: int -> int -> opt array array
+
   (** [hit b pair] changes the board [b] after a coordinate 
       [pair] is attacked. *)
   val hit: t -> int*int -> unit

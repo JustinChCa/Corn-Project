@@ -13,6 +13,10 @@ module Board = struct
      element of the array must contain an element of type opt.*)
   type t = (opt array) array 
 
+  (** [make_board x y] makes a matrix with [x] rows and [y] columns with every 
+      element in the matrix being [Water None]. *)
+  let make_board x y = Array.make_matrix x y (Water None)
+
   (** [hit b pair] augments the board [b] based on an attack on the
       coordinates [pair]. Returns a message that the player has already
       attacked an area if they input that coordinate; the plyaer will not get 
@@ -67,6 +71,10 @@ module Board = struct
   (** [rows b] gives the number of rows in the board [b]. This is equal to the
       size of each column in [b]  *)
   let rows b = Array.length b
+
+
+
+  let place_ship b ship = failwith "unimplemented"
 
 
 end
