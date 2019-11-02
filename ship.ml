@@ -1,6 +1,9 @@
 
 type coor = int*int
 
+type compare = | EQ | GL
+
+
 module type Ship = sig
   type t
   val taken : int*int list ref
@@ -12,6 +15,7 @@ module type Ship = sig
   val create : coor list -> t
   val hit : coor -> t -> t
   val alive : t -> bool
+  val compare : t -> t -> compare
 end
 
 module ShipMaker = struct
@@ -53,4 +57,10 @@ module ShipMaker = struct
   let rec alive = function
     | [] -> false
     | (s, b)::t -> if b then true else alive t
+
+  let compare s1 s2 = 
+    match List.hd s1, List.hd s2 with 
+    | (s1x, s1y), (s2x,s2y) -> if s1x = s2x && s1y= s2y then EQ else GL
+
 end
+

@@ -25,7 +25,7 @@ exception DNE
 
 let find_cordinates args = 
   let regex= Str.regexp "^[A-Z][0-9]$\\|^[A-Z][0-9][0-9]$" in 
-  let head = List.hd args in 
+  let head = args in 
   match Str.search_forward regex head 0 with 
   | exception Not_found -> raise Bad_Cordinates 
   | t -> match Str.matched_string head with
@@ -35,7 +35,7 @@ let find_cordinates args =
 
 
 let parse_attack args =
-  Attack (find_cordinates args)
+  Attack (find_cordinates (List.hd args))
 
 
 let parse_place args =
@@ -54,7 +54,7 @@ let parse_place args =
     | "horizontal" -> Horizontal
     | _ -> raise Malformed
   in 
-  let cords = find_cordinates args in 
+  let cords = find_cordinates (List.hd args) in 
   let ship = get_ship (args |> List.tl |> List.hd) in
   let orientation = get_orientation (args |> List.tl |> List.tl |> List.hd) in 
   Place (ship,cords,orientation)
