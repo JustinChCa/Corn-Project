@@ -1,9 +1,9 @@
 (** Ship builder *)
 
 (** [coor] represents a coordination in the form of Letter-Number *)
-type coor = string
-
-(** A [Ship] has coordinates that have possibly been hit. *)
+type coor = int*int
+type compare = | EQ | GL
+               (** A [Ship] has coordinates that have possibly been hit. *)
 module type Ship = sig
 
   (** [t] is the type of ships *)
@@ -27,6 +27,7 @@ module type Ship = sig
   val create: coor list -> t
   val hit: coor -> t -> t
   val alive: t -> bool
+  val compare: t -> t -> compare
 end
 
 module ShipMaker : 

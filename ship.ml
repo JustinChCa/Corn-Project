@@ -6,7 +6,7 @@ type compare = | EQ | GL
 
 module type Ship = sig
   type t
-  val taken : int*int list ref
+  val taken : coor list ref
   val empty : t
   val is_empty: t -> bool
   val size : t -> int
