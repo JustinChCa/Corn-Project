@@ -59,7 +59,8 @@ module ShipMaker = struct
     | (s, b)::t -> if b then true else alive t
 
   let compare s1 s2 = 
-    match List.hd s1, List.hd s2 with 
+    (**Sort s1 && s2 first to avoid any potential issues...OR make rep_ok *)
+    match fst (List.hd s1), fst (List.hd s2) with 
     | (s1x, s1y), (s2x,s2y) -> if s1x = s2x && s1y= s2y then EQ else GL
 
 end
