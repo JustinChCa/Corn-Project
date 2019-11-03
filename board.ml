@@ -76,10 +76,8 @@ module BoardMaker = struct
   (** [dis_board b] gives a console command graphic of the board.*)
   let dis_board (b:t) = 
     let partition = h_partition "" (Array.length b.(1)) in
-    print_string partition;
+    print_endline partition;
     Array.iter (dis_row partition) b;;
-
-
 
   (** [columns b] gives the number of columns in the board [b]. This is equal to
       the size of each row in [b] *)
@@ -90,8 +88,11 @@ module BoardMaker = struct
       size of each column in [b]  *)
   let rows (b:t) = Array.length b
 
-  let place_pair b pair = 
-    failwith "unimplemented"
+  (** [place_pair b ship pair] *)
+  let place_pair b ship pair = 
+    match b.(fst(fst pair)).(snd (fst pair)) with
+    |Water None -> b.(fst(fst pair)).(snd (fst pair)) <- Water (Some ship)
+    | _ -> raise Overlap
 
   (** assume ship is not empty *)
   let place_ship_h (b:t) (ship:ShipMaker.t) =
@@ -99,7 +100,7 @@ module BoardMaker = struct
     | ((_,a),_)::_ -> begin
         if a+1+(List.length ship) > (columns b) then 
           raise Out_of_Bounds else
-          List.iter (place_pair b) ship
+          List.iter (place_pair b ship) ship
       end
     |_ -> raise (Invalid_argument "ship is bad")
 
@@ -108,7 +109,7 @@ module BoardMaker = struct
     | ((a,_),_)::_ -> begin
         if a+1+(List.length ship) > (rows b) then 
           raise Out_of_Bounds else
-          List.iter (place_pair b) ship
+          List.iter (place_pair b ship) ship
       end
     |_ -> raise (Invalid_argument "ship is bad")
 
