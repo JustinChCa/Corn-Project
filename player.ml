@@ -4,7 +4,7 @@ open Board
 module type Player = sig 
   type t 
 
-  val init_player: ShipMaker.t -> Board.t -> string -> t
+  val init_player: ShipMaker.t -> BoardMaker.t -> string -> t
 
   val dis_board: t -> unit
 
@@ -21,7 +21,7 @@ module PlayerMaker = struct
 
 
   type t = {ships: ShipMaker.t list;
-            board: Board.t;
+            board: BoardMaker.t;
             ships_alive: int;
             name: string
            }

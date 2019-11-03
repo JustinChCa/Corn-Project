@@ -2,15 +2,17 @@
 open Ship
 
 module type Board = sig
-  type opt = Miss | Hit | Water
+  type opt = Miss | Hit | Water of ShipMaker.t option
+  exception Overlap
+  exception Out_of_Bounds
   type t 
-  val make_board: int -> int -> opt array array
+  val make_board: int -> int -> t
   val hit: t -> int*int -> unit
-  val dis_board: opt array array -> unit
-  val columns: opt array array -> int
-  val rows: opt array array -> int
-  val place_ship_h: opt array array -> (int*int)*bool list -> unit
-  val place_ship_v: opt array array -> (int*int)*bool list -> unit
+  val dis_board: t -> unit
+  val columns: t -> int
+  val rows: t -> int
+  val place_ship_h: t -> ShipMaker.t -> unit
+  val place_ship_v: t -> ShipMaker.t -> unit
 end
 
 module BoardMaker = struct
@@ -27,11 +29,11 @@ module BoardMaker = struct
      and the jth column of a matrix of dimensions ixj.
      RI: All rows are the same size and all columns are the same size. Every
      element of the array must contain an element of type opt.*)
-  type t = (opt array) array 
+  type t = opt array array 
 
   (** [make_board x y] makes a matrix with [x] rows and [y] columns with every 
       element in the matrix being [Water None]. *)
-  let make_board x y = Array.make_matrix x y (Water None)
+  let make_board x y : t= Array.make_matrix x y (Water None)
 
   (** [hit b pair] augments the board [b] based on an attack on the
       coordinates [pair]. Returns a message that the player has already
@@ -72,7 +74,7 @@ module BoardMaker = struct
     print_endline str;;
 
   (** [dis_board b] gives a console command graphic of the board.*)
-  let dis_board b = 
+  let dis_board (b:t) = 
     let partition = h_partition "" (Array.length b.(1)) in
     print_string partition;
     Array.iter (dis_row partition) b;;
@@ -81,18 +83,18 @@ module BoardMaker = struct
 
   (** [columns b] gives the number of columns in the board [b]. This is equal to
       the size of each row in [b] *)
-  let columns b = Array.length b.(1)
+  let columns (b:t) = Array.length b.(1)
 
 
   (** [rows b] gives the number of rows in the board [b]. This is equal to the
       size of each column in [b]  *)
-  let rows b = Array.length b
+  let rows (b:t) = Array.length b
 
   let place_pair b pair = 
     failwith "unimplemented"
 
   (** assume ship is not empty *)
-  let place_ship_h b ship =
+  let place_ship_h (b:t) (ship:ShipMaker.t) =
     match ship with
     | ((_,a),_)::_ -> begin
         if a+1+(List.length ship) > (columns b) then 
@@ -101,7 +103,7 @@ module BoardMaker = struct
       end
     |_ -> raise (Invalid_argument "ship is bad")
 
-  let place_ship_v b ship =     
+  let place_ship_v (b:t) (ship:ShipMaker.t) =     
     match ship with
     | ((a,_),_)::_ -> begin
         if a+1+(List.length ship) > (rows b) then 

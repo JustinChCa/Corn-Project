@@ -1,8 +1,12 @@
+open Ship
 
 module type Board = sig
 
   (** type [opt] is the possible types of each space in the board. *)
-  type opt = Miss | Hit | Water
+  type opt = Miss | Hit | Water of ShipMaker.t option
+
+  exception Overlap
+  exception Out_of_Bounds
 
   (** the type implementation of the board, an opt array array. *)
   type t 
@@ -28,3 +32,5 @@ module type Board = sig
   val place_ship_v: opt array array -> (int*int)*bool list -> unit
 
 end
+
+module BoardMaker : Board 
