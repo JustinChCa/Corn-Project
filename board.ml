@@ -1,7 +1,19 @@
 
 open Ship
 
-module Board = struct
+module type Board = sig
+  type opt = Miss | Hit | Water
+  type t 
+  val make_board: int -> int -> opt array array
+  val hit: t -> int*int -> unit
+  val dis_board: opt array array -> unit
+  val columns: opt array array -> int
+  val rows: opt array array -> int
+  val place_ship_h: opt array array -> (int*int)*bool list -> unit
+  val place_ship_v: opt array array -> (int*int)*bool list -> unit
+end
+
+module BoardMaker = struct
 
 
   type opt = Miss | Hit | Water of ShipMaker.t option
