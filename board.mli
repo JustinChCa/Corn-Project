@@ -11,7 +11,7 @@ module type Board = sig
   (** the type implementation of the board, an opt array array. *)
   type t 
 
-  val make_board: int -> int -> opt array array
+  val make_board: int -> int -> t
 
   (** [hit b pair] changes the board [b] after a coordinate 
       [pair] is attacked. *)
@@ -19,17 +19,17 @@ module type Board = sig
 
   (** [dis_board b] displays the board in graphical form in the console command
       window. *)
-  val dis_board: opt array array -> unit
+  val dis_board: t -> unit
 
   (** [columns b] gives the number of columns in board [b] *)
-  val columns: opt array array -> int
+  val columns: t -> int
 
   (** [rows b] give the number of rows in board [b] *)
-  val rows: opt array array -> int
+  val rows: t -> int
 
-  val place_ship_h: opt array array -> (int*int)*bool list -> unit
+  val place_ship_h: t -> ShipMaker.t -> unit
 
-  val place_ship_v: opt array array -> (int*int)*bool list -> unit
+  val place_ship_v: t -> ShipMaker.t -> unit
 
 end
 
