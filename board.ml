@@ -3,7 +3,11 @@ open Ship
 
 module Board = struct
 
+
   type opt = Miss | Hit | Water of ShipMaker.t option
+
+  exception Overlap
+  exception Out_of_Bounds
 
   (**AF: The array [| r1; r2; r3; r4;... |] is the array of the row arrays
      ri = [|ai1; ai2; ai3; ai4; ... |] which represents the elements in left to 
@@ -72,9 +76,27 @@ module Board = struct
       size of each column in [b]  *)
   let rows b = Array.length b
 
+  let place_pair b pair = 
+    failwith "unimplemented"
 
+  (** assume ship is not empty *)
+  let place_ship_h b ship =
+    match ship with
+    | ((_,a),_)::_ -> begin
+        if a+1+(List.length ship) > (columns b) then 
+          raise Out_of_Bounds else
+          List.iter (place_pair b) ship
+      end
+    |_ -> raise (Invalid_argument "ship is bad")
 
-  let place_ship b ship = failwith "unimplemented"
+  let place_ship_v b ship =     
+    match ship with
+    | ((a,_),_)::_ -> begin
+        if a+1+(List.length ship) > (rows b) then 
+          raise Out_of_Bounds else
+          List.iter (place_pair b) ship
+      end
+    |_ -> raise (Invalid_argument "ship is bad")
 
 
 end

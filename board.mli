@@ -23,5 +23,8 @@ module type Board = sig
   (** [rows b] give the number of rows in board [b] *)
   val rows: opt array array -> int
 
+  val place_ship_h: opt array array -> (int*int)*bool list -> unit
+
+  val place_ship_v: opt array array -> (int*int)*bool list -> unit
 
 end
