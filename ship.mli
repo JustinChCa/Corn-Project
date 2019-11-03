@@ -22,11 +22,25 @@ module type Ship = sig
       [size empty] is 0.*)
   val size : t -> int
 
+  (** [insert coor s] inserts coordinate [coor] into ship [s]. Does nothing
+      if [coor] already in [s]. *)
   val insert: coor -> t -> t
+
+  (** [remove coor s] removes the coordinate [coor] from ship [s]. Does
+      nothing if [coor] already in [s]. *)
   val remove: coor -> t -> t
+
+  (** [create lst] creates a ship with the coordinate list [lst]*)
   val create: coor list -> t
+
+  (** [hit coord s] is the ship [s] with the coordinate [coord] set to false.*)
   val hit: coor -> t -> t
+
+  (** [alive s] is true if there exists a coordinate in ship [s] that is true.*)
   val alive: t -> bool
+
+  (** [compare s1 s2] returns EQ if and only if the first coordinates of [s1]
+      and [s2] are equal, else returns GL. *)
   val compare: t -> t -> compare
 end
 
