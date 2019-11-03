@@ -39,10 +39,21 @@ module PlayerMaker = struct
   let get_ships t = t.ships
 
   let update_ship t ship = 
+    let rec find_ship lst  =
+      match lst with 
+      | [] -> []
+      | h::t -> if (ShipMaker.compare h ship) = Ship.EQ then ship::t else h::(find_ship t)
 
-    (** NOT DONE *)
-    List.fold_left (fun accum el -> 
-        if ShipMaker.alive el then accum+1 else accum) 0 t.ships
+    in
+
+    let new_ships = find_ship t.ships in 
+    let num_alive = List.fold_left (fun accum el -> if ShipMaker.alive el then accum+1 else accum) 0 new_ships in 
+    {
+      ships=new_ships;
+      board=t.board;
+      ships_alive=num_alive;
+      name=t.name
+    }
 
 
 
