@@ -75,7 +75,7 @@ module BoardMaker = struct
 
   (** [dis_board b] gives a console command graphic of the board.*)
   let dis_board (b:t) = 
-    let partition = h_partition "" (Array.length b.(1)) in
+    let partition = h_partition "=" (Array.length b.(1)) in
     print_endline partition;
     Array.iter (dis_row partition) b;;
 
