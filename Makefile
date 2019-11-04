@@ -1,4 +1,4 @@
-MODULES=ship board authors commands
+MODULES=ship board authors commands player
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)

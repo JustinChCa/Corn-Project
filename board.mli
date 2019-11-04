@@ -27,8 +27,15 @@ module type Board = sig
   (** [rows b] give the number of rows in board [b] *)
   val rows: t -> int
 
+  (** [place_ship_h b ship] puts ship horizontally into the board [b].
+      Raises: Out_of_Bounds if the ship exceeds the bounds of the board.
+          Overlap if the ship will overlap with an existing ship on the board.*)
   val place_ship_h: t -> ShipMaker.t -> unit
 
+
+  (** [place_ship_h b ship] puts ship vertically into the board [b].
+      Raises: Out_of_Bounds if the ship exceeds the bounds of the board.
+          Overlap if the ship will overlap with an existing ship on the board.*)
   val place_ship_v: t -> ShipMaker.t -> unit
 
 end
