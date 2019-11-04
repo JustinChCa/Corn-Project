@@ -4,20 +4,17 @@ open Board
 module type Player = sig 
   type t 
 
-  val init_player: ShipMaker.t -> BoardMaker.t -> string -> t
+  val init_player: ShipMaker.t list -> BoardMaker.t -> string -> t
 
-  val dis_board: t -> unit
+  val get_name: t -> string
 
-  val dis_name: t -> unit
-
-  val is_alive: t -> unit
+  val is_alive: t -> bool
 
   val get_ships: t -> ShipMaker.t list
 
   val update_ship: t -> ShipMaker.t -> t
 
   val get_board: t -> BoardMaker.t
-
 
 end
 
@@ -43,6 +40,7 @@ module PlayerMaker = struct
 
   let get_board t = t.board
 
+  let get_name t = t.name
 
   let rec find_ship lst ship =
     match lst with 
