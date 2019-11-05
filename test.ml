@@ -8,6 +8,7 @@ module Board = Board.BoardMaker
 
 module Ship = Ship.ShipMaker
 
+
 let board = Board.make_board 10 10
 let ship_destroyer = Ship.create [(1,1);(1,2);(1,3)]
 let ship_sub = Ship.create [(2,1);(3,1)]
@@ -25,6 +26,8 @@ let ship_tests = [
   "size with sub is 2" >:: (fun _ -> assert_equal 2 (size ship_sub));
 
 
+  (* test_ship_compare "Tests two ships which are not equal" 
+     ship_destroyer ship_sub GL *)
 
 ]
 

@@ -12,7 +12,7 @@ module type Player = sig
 
   val get_ships: t -> ShipMaker.t list
 
-  val update_ship: t -> ShipMaker.t -> t
+  val update_ships: t -> ShipMaker.t list -> unit
 
   val get_board: t -> BoardMaker.t
 
@@ -20,9 +20,9 @@ end
 
 module PlayerMaker = struct 
 
-  type t = {ships: ShipMaker.t list;
+  type t = {mutable ships: ShipMaker.t list;
             board: BoardMaker.t;
-            ships_alive: int;
+            mutable ships_alive: int;
             name: string
            }
 
@@ -42,24 +42,11 @@ module PlayerMaker = struct
 
   let get_name t = t.name
 
-  let rec find_ship lst ship =
-    match lst with 
-    | [] -> []
-    | h::t -> if (ShipMaker.compare h ship) = Ship.EQ 
-      then ship::t else h::(find_ship t ship)
-
-  let update_ship t ship = 
-    let new_ships = find_ship t.ships ship in 
+  let update_ships t ships = 
+    t.ships <- ships;
     let num_alive = List.fold_left (fun accum el -> 
-        if ShipMaker.alive el then accum+1 else accum) 0 new_ships in 
-    {
-      ships=new_ships;
-      board=t.board;
-      ships_alive=num_alive;
-      name=t.name
-    }
-
-
+        if ShipMaker.alive el then accum+1 else accum) 0 ships in
+    t.ships_alive <- num_alive
 
 end 
 

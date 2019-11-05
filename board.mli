@@ -20,11 +20,11 @@ module type Board = sig
       element in the matrix being [Water None]. *)
   val make_board: int -> int -> t
 
-  (** [hit b pair] augments the board [b] based on an attack on the
+  (* (** [hit b pair] augments the board [b] based on an attack on the
       coordinates [pair]. Returns a message that the player has already
       attacked an area if they input that coordinate; the player will not get 
       another turn if they do. *)
-  val hit: t -> int*int -> unit
+     val hit: t -> int*int -> unit *)
 
   (** [dis_board b] displays the board in graphical form in the console command
       window. *)

@@ -13,7 +13,7 @@ module type Ship = sig
   val taken : coor list ref
 
   (** [empty] is an empty ship. *)
-  val empty : t
+  val empty : unit -> t
 
   (** [is_empty s] is [true] iff [s] is empty. *)
   val is_empty : t -> bool
@@ -24,18 +24,19 @@ module type Ship = sig
 
   (** [insert coor s] inserts coordinate [coor] into ship [s]. Does nothing
       if [coor] already in [s]. *)
-  val insert: coor -> t -> t
+  val insert : coor -> t -> unit
 
   (** [remove coor s] removes the coordinate [coor] from ship [s]. Does
       nothing if [coor] already in [s]. *)
-  val remove: coor -> t -> t
+  val remove : coor -> t -> unit
 
   (** [create lst] creates a ship with the coordinate list [lst]*)
-  val create: coor list -> t
+  val create : coor list -> t
 
   (** [hit coord s] is the ship [s] with the coordinate [coord] set to false.*)
-  val hit: coor -> t -> t
+  val hit : coor -> t -> unit
 
+  val calive : coor -> t -> bool
   (** [alive s] is true if there exists a coordinate in ship [s] that is true.*)
   val alive: t -> bool
 
@@ -45,4 +46,4 @@ module type Ship = sig
 end
 
 module ShipMaker : 
-  Ship with type t = (coor * bool) list
+  Ship with type t = (coor * bool) list ref
