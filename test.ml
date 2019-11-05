@@ -1,29 +1,33 @@
 open OUnit2
-open Ship
-open Board
 open Commands
-open Player
 
-module Player = PlayerMaker
 
-module Board = BoardMaker
+module Player = Player.PlayerMaker
 
-module Ship = ShipMaker
+module Board = Board.BoardMaker
+
+module Ship = Ship.ShipMaker
 
 
 let board = Board.make_board 10 10
 let ship_destroyer = Ship.create [(1,1);(1,2);(1,3)]
 let ship_sub = Ship.create [(2,1);(3,1)]
-let player_1 = Player.init_player [ship_sub;ship_destroyer] board "Jon"
+let player = Player.init_player [ship_destroyer; ship_sub] board "player 1"
 
-let test_ship_compare name ship1 ship2 expected_output = 
-  name >:: 
-  (fun _ ->
-     assert_equal expected_output (Ship.compare ship1 ship2))
-
+open Ship
 let ship_tests = [
-  test_ship_compare "Tests two ships which are not equal" 
-    ship_destroyer ship_sub GL
+
+  "is_empty against empty" >:: (fun _ -> assert_equal true (is_empty empty));
+  "is empty against nonempty" >:: 
+  (fun _ -> assert_equal false (is_empty ship_sub));
+
+  "size with empty is 0" >:: (fun _ -> assert_equal 0 (size empty));
+  "size with destroyer is 3" >:: (fun _ -> assert_equal 3 (size ship_destroyer));
+  "size with sub is 2" >:: (fun _ -> assert_equal 2 (size ship_sub));
+
+
+  (* test_ship_compare "Tests two ships which are not equal" 
+     ship_destroyer ship_sub GL *)
 
 ]
 

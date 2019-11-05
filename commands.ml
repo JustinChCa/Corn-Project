@@ -22,9 +22,13 @@ exception Illegal
 exception DNE
 
 
+<<<<<<< HEAD
 (**[find_cordinates args] is the numerical tuple representation of a given string 
    cordinate representation
    Example: "A5" -> "(0,4)"*)
+=======
+
+>>>>>>> fbeab588cfd59844ec227259626d940014f3072d
 let find_cordinates args = 
   let regex= Str.regexp "^[A-Z][0-9]$\\|^[A-Z][0-9][0-9]$" in 
   let head = args in 
