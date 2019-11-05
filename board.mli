@@ -3,7 +3,7 @@ open Ship
 module type Board = sig
 
   (** type [opt] is the possible types of each space in the board. *)
-  type opt = Miss | Hit | Water of ShipMaker.t option
+  type opt = Miss | Water of ShipMaker.t option
 
   exception Overlap
   exception OutOfBounds

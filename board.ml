@@ -2,12 +2,11 @@
 open Ship
 
 module type Board = sig
-  type opt = Miss | Hit | Water of ShipMaker.t option
+  type opt = Miss | Water of ShipMaker.t option
   exception Overlap
   exception OutOfBounds
   type t 
   val make_board: int -> int -> t
-  val hit: t -> int*int -> unit
   val dis_board: t -> unit
   val columns: t -> int
   val rows: t -> int
