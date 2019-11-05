@@ -2,6 +2,7 @@ open OUnit2
 open Ship
 open Board
 open Commands
+open Player
 
 module Player = PlayerMaker
 
