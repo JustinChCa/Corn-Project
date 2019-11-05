@@ -77,7 +77,7 @@ module BoardMaker = struct
   (** [check_overlap b ship pair] checks if there is an overlap between the
       ships in board [b].
       Raises: Overlap if the ship [ship] will overlap with existing ship. *)
-  let check_overlap b ship pair = 
+  let check_overlap b pair = 
     match b.(fst(fst pair)).(snd (fst pair)) with
     |Water None -> ()
     | _ -> raise Overlap
@@ -91,22 +91,22 @@ module BoardMaker = struct
     | _ -> failwith "impossible, check_overlap failed"
 
   let place_ship_h (b:t) (ship:ShipMaker.t) =
-    match ship with
+    match !ship with
     | ((_,a),_)::_ -> begin
-        if a+1+(List.length ship) > (columns b) then 
+        if a+1+(List.length !ship) > (columns b) then 
           raise OutOfBounds else (
-          List.iter (check_overlap b ship) ship;
-          List.iter (place_pair b ship) ship;)
+          List.iter (check_overlap b) !ship;
+          List.iter (place_pair b ship) !ship;)
       end
     |_ -> raise (Invalid_argument "ship is bad")
 
   let place_ship_v (b:t) (ship:ShipMaker.t) =     
-    match ship with
+    match !ship with
     | ((a,_),_)::_ -> begin
-        if a+1+(List.length ship) > (rows b) then 
+        if a+1+(List.length !ship) > (rows b) then 
           raise OutOfBounds else (
-          List.iter (check_overlap b ship) ship;
-          List.iter (place_pair b ship) ship;)
+          List.iter (check_overlap b) !ship;
+          List.iter (place_pair b ship) !ship;)
       end
     |_ -> raise (Invalid_argument "ship is bad")
 
