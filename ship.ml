@@ -38,7 +38,7 @@ module ShipMaker = struct
       | (c,b)::t -> 
         match Stdlib.compare c coor with
         | 0 -> (c,b)::t
-        | x when x>0 -> (c,b)::ins_helper t
+        | x when x<0 -> (c,b)::ins_helper t
         | _ -> (coor, true)::(c,b)::t in
     ship := ins_helper !ship
 
@@ -48,7 +48,7 @@ module ShipMaker = struct
       | (c,b)::t ->
         match Stdlib.compare c coor with
         | 0 -> t
-        | x when x>0 -> (c,b)::rem_helper t
+        | x when x<0 -> (c,b)::rem_helper t
         | _ -> (c,b)::t in
     ship := rem_helper !ship
 
@@ -61,18 +61,18 @@ module ShipMaker = struct
       | (c, b)::t -> 
         match Stdlib.compare c coor with
         | 0 -> (c, false)::t
-        | x when x>0 -> (c,b)::hit_helper t
+        | x when x<0 -> (c,b)::hit_helper t
         | _ -> (c,b)::t in
     ship := hit_helper !ship
 
   let rec calive coor ship =
     let rec coor_helper = function
-      | [] -> failwith "You suck die."
+      | [] -> failwith "Empty List Failure."
       | (c, b)::t -> 
         match Stdlib.compare c coor with
         | 0 -> b
-        | x when x>0 -> coor_helper t
-        | _ -> failwith "You suck die." in
+        | x when x<0 -> coor_helper t
+        | _ -> failwith "Comparison Failure." in
     coor_helper !ship
 
   let alive ship =

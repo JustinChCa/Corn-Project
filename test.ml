@@ -15,6 +15,14 @@ let ship_sub = Ship.create [(2,1);(3,1)]
 let player = Player.init_player [ship_destroyer; ship_sub] board "player 1"
 
 open Ship
+
+let ship_attack_test name coordinate ship =  
+  hit coordinate ship;
+  name >:: (fun _ -> assert_equal false  (calive coordinate ship))
+
+
+
+
 let ship_tests = [
 
   "is_empty against empty" >:: 
@@ -27,9 +35,19 @@ let ship_tests = [
   (fun _ -> assert_equal 3 (size ship_destroyer));
   "size with sub is 2" >:: (fun _ -> assert_equal 2 (size ship_sub));
 
+  (* ship_attack_test "attacks (1,1) coordinate on destroyer" (1,1) ship_destroyer;
+     ship_attack_test "attacks (1,2) coordinate on destroyer" (1,2) ship_destroyer *)
 
-  (* test_ship_compare "Tests two ships which are not equal" 
-     ship_destroyer ship_sub GL *)
+  "(1,1)" >:: (fun _ ->   hit (1,1) ship_destroyer;
+                assert_equal false  (calive (1,1) ship_destroyer));
+
+  "(1,2)" >:: (fun _ ->   hit (1,2) ship_destroyer;
+                assert_equal false  (calive (1,2) ship_destroyer))
+
+
+
+(* test_ship_compare "Tests two ships which are not equal" 
+   ship_destroyer ship_sub GL *)
 
 ]
 
