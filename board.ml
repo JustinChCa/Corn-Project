@@ -7,6 +7,7 @@ module type Board = sig
   exception OutOfBounds
   type t 
   val make_board: int -> int -> t
+  val hit: t -> int*int -> unit
   val dis_board: t -> unit
   val columns: t -> int
   val rows: t -> int
@@ -28,19 +29,26 @@ module BoardMaker = struct
   let make_board x y : t= Array.make_matrix x y (Water None)
 
 
-  (*  let hit (b:t) (pair:int*int) : unit = 
-      match pair with
-      |(r, c) -> begin
-          match (b.(r)).(c) with 
-          | Miss
-          | Hit -> print_endline "You have already attacked here"
-          (*TODO: go to the next player's turn *)
-          | Water op -> begin
-              match op with 
-              | None -> (b.(r)).(c) <- Miss
-              | Some ship -> (b.(r)).(c) <- Hit
-            end
-        end *)
+  let hit (b:t) (pair:int*int) : unit = 
+    match pair with
+    |(r, c) -> begin
+        match (b.(r)).(c) with 
+        | Miss -> print_endline "You have already attacked here and missed."
+        (*TODO: go to the next player's turn *)
+        | Water op -> begin
+            match op with 
+            | None -> begin
+                b.(r).(c) <- Miss; 
+                print_endline "You missed.";
+              end
+            | Some ship -> if ShipMaker.calive (r,c) ship then begin
+                ShipMaker.hit (r,c) ship;
+                print_endline "You hit.";
+              end else
+                print_endline "You have already attacked here and hit.";
+          end
+      end
+
 
   (** [h_partition str n] creates the horizontal partition needed for the 
       console command graphic. *)
@@ -92,7 +100,7 @@ module BoardMaker = struct
   let place_ship_h (b:t) (ship:ShipMaker.t) =
     match !ship with
     | ((_,a),_)::_ -> begin
-        if a+1+(List.length !ship) > (columns b) then 
+        if a+(List.length !ship) > (columns b) then 
           raise OutOfBounds else (
           List.iter (check_overlap b) !ship;
           List.iter (place_pair b ship) !ship;)
@@ -102,7 +110,7 @@ module BoardMaker = struct
   let place_ship_v (b:t) (ship:ShipMaker.t) =     
     match !ship with
     | ((a,_),_)::_ -> begin
-        if a+1+(List.length !ship) > (rows b) then 
+        if a+(List.length !ship) > (rows b) then 
           raise OutOfBounds else (
           List.iter (check_overlap b) !ship;
           List.iter (place_pair b ship) !ship;)
