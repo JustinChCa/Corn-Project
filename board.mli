@@ -26,9 +26,10 @@ module type Board = sig
       another turn if they do. *)
   val hit: t -> int*int -> unit
 
-  (** [dis_board b] displays the board in graphical form in the console command
-      window. *)
-  val dis_board: t -> unit
+  (** [dis_board b bool] displays the player's board in if bool is [true] and
+      displays the enemy's board if bool is [false] *)
+  val dis_board: t -> bool -> unit
+
 
   (** [columns b] gives the number of columns in the board [b]. This is equal to
       the size of each row in [b] *)
