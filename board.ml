@@ -103,7 +103,7 @@ module BoardMaker = struct
   let place_ship_h (b:t) (ship:ShipMaker.t) =
     match !ship with
     | ((_,a),_)::_ -> begin
-        if a+1+(List.length !ship) > (columns b) then 
+        if a+(List.length !ship) > (columns b) then 
           raise OutOfBounds else (
           List.iter (check_overlap b) !ship;
           List.iter (place_pair b ship) !ship;)
@@ -113,7 +113,7 @@ module BoardMaker = struct
   let place_ship_v (b:t) (ship:ShipMaker.t) =     
     match !ship with
     | ((a,_),_)::_ -> begin
-        if a+1+(List.length !ship) > (rows b) then 
+        if a+(List.length !ship) > (rows b) then 
           raise OutOfBounds else (
           List.iter (check_overlap b) !ship;
           List.iter (place_pair b ship) !ship;)
