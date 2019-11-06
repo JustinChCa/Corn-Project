@@ -38,32 +38,21 @@ let ship_tests = [
   (* ship_attack_test "attacks (1,1) coordinate on destroyer" (1,1) ship_destroyer;
      ship_attack_test "attacks (1,2) coordinate on destroyer" (1,2) ship_destroyer *)
 
-  "(1,1)" >:: (fun _ ->   hit (1,1) ship_destroyer;
-                assert_equal false  (calive (1,1) ship_destroyer));
+  "(1,1)" >:: (fun _ ->   hit (1,1) ship_destroyer; 
+                assert_equal false  (calive (1,1) ship_destroyer); 
+                assert_equal true (alive ship_destroyer);
+                hit (1,2) ship_destroyer; 
+                assert_equal false  (calive (1,2) ship_destroyer);
+                assert_equal true  (alive ship_destroyer);
 
-  "after just 1 hit, destroyer should be alive still" >:: (fun _ ->  
-      assert_equal true  (alive ship_destroyer));
+                hit (1,3) ship_destroyer; 
+                assert_equal false  (calive (1,3) ship_destroyer);
 
-  "checking if (1,1) is still alive...(DIRECTLY AFTER HITTING)" >:: (fun _ ->  
-      assert_equal false  (calive (1,1) ship_destroyer));
+                assert_equal false  (calive (1,1) ship_destroyer);
+                assert_equal false  (calive (1,3) ship_destroyer);
+                assert_equal false  (alive ship_destroyer))
 
-
-  "(1,2)" >:: (fun _ ->   hit (1,2) ship_destroyer;
-                assert_equal false  (calive (1,2) ship_destroyer));
-
-  "after just 2 hits, destroyer should be alive still" >:: (fun _ ->  
-      assert_equal true  (alive ship_destroyer));
-
-
-  "checking if (1,1) is still alive...(AFTER HITTING (1,2))" >:: (fun _ ->  
-      assert_equal false  (calive (1,1) ship_destroyer));
-
-
-  "(1,3)" >:: (fun _ ->   hit (1,3) ship_destroyer;
-                assert_equal false  (calive (1,3) ship_destroyer));
-
-  "after 3 hits, destroyer should be dead" >:: (fun _ ->  
-      assert_equal false  (alive ship_destroyer));
+  ;
 
 
 
