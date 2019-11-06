@@ -3,7 +3,7 @@ open Ship
 module type Board = sig
 
   (** type [opt] is the possible types of each space in the board. *)
-  type opt = Miss | Hit | Water of ShipMaker.t option
+  type opt = Miss | Water of ShipMaker.t option
 
   exception Overlap
   exception OutOfBounds
@@ -20,15 +20,16 @@ module type Board = sig
       element in the matrix being [Water None]. *)
   val make_board: int -> int -> t
 
-  (* (** [hit b pair] augments the board [b] based on an attack on the
+  (** [hit b pair] augments the board [b] based on an attack on the
       coordinates [pair]. Returns a message that the player has already
       attacked an area if they input that coordinate; the player will not get 
       another turn if they do. *)
-     val hit: t -> int*int -> unit *)
+  val hit: t -> int*int -> unit
 
-  (** [dis_board b] displays the board in graphical form in the console command
-      window. *)
-  val dis_board: t -> unit
+  (** [dis_board b bool] displays the player's board in if bool is [true] and
+      displays the enemy's board if bool is [false] *)
+  val dis_board: t -> bool -> unit
+
 
   (** [columns b] gives the number of columns in the board [b]. This is equal to
       the size of each row in [b] *)

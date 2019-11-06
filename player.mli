@@ -17,10 +17,6 @@ module type Player = sig
   (**[get_ships t] is the ships of player [t] *)
   val get_ships: t -> ShipMaker.t list
 
-  (**[update_ship t ship] returns a copy of player [t] with an updated
-     ship [ship] *)
-  val update_ships: t -> ShipMaker.t list -> unit
-
   (**[get_board t] is the board of player [t] *)
   val get_board: t -> BoardMaker.t
 

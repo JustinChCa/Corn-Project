@@ -1,7 +1,9 @@
+(**[orientation] represents the orientation of the desired ship*)
 type orientation =
   | Vertical
   | Horizontal
 
+(**[command] represents the types of valid commands in the game engine. *)
 type command = 
   | Attack of (int *int)
   | Place of string * (int * int) * orientation
@@ -10,19 +12,25 @@ type command =
 
 
 
-
+(**Raised when given an invalid command.*)
 exception Malformed 
 
+(**Raised when a given cordinate is out of the Board's bounds *)
 exception Out_of_Bounds
 
+(**Raised when a given cordinate cannot be numericaly represented. *)
 exception Bad_Cordinates
 
+(**Raised when an illegal argument is given. *)
 exception Illegal
 
+(**Raised when a desired ship does not exist. *)
 exception DNE
 
 
-
+(**[find_cordinates args] is the numerical tuple representation of a given string 
+   coordinate representation
+   Example: "A5" -> "(0,4)"*)
 let find_cordinates args = 
   let regex= Str.regexp "^[A-Z][0-9]$\\|^[A-Z][0-9][0-9]$" in 
   let head = args in 
@@ -59,7 +67,9 @@ let parse_place args =
   let orientation = get_orientation (args |> List.tl |> List.tl |> List.hd) in 
   Place (ship,cords,orientation)
 
-
+(**[parse command] is the command that the user wants to execute given a string
+   [command]
+   Raises: [Malformed] if the string [command] cannot be parsed to a valid command *)
 let parse command =
   let str_lst = String.split_on_char ' ' command in 
   match List.hd str_lst with 
