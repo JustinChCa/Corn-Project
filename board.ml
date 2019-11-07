@@ -50,8 +50,15 @@ module BoardMaker = struct
     print_endline "|";
     print_endline str;;
 
+<<<<<<< HEAD
   let dis_board board self = 
     let partition = h_partition "-" (Array.length board.(0)) in
+=======
+  (* (TODO) display the coordinates on the top and left of the board. *)
+
+  let dis_board (b:t) self = 
+    let partition = h_partition "=" (Array.length b.(1)) in
+>>>>>>> 6415c48b2a48871eb8af84df9194873bedd736cd
     print_endline partition;
     Array.iteri (dis_row self partition) board;;
 
