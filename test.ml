@@ -1,5 +1,5 @@
 open OUnit2
-open Commands
+open Command
 
 
 module Player = Player.PlayerMaker
@@ -19,9 +19,6 @@ open Ship
 let ship_attack_test name coordinate ship =  
   hit coordinate ship;
   name >:: (fun _ -> assert_equal false  (calive coordinate ship))
-
-
-
 
 let ship_tests = [
   "size with destroyer is 3" >:: 
@@ -43,19 +40,7 @@ let ship_tests = [
 
                 assert_equal false  (calive (1,1) ship_destroyer);
                 assert_equal false  (calive (1,3) ship_destroyer);
-                assert_equal false  (alive ship_destroyer))
-
-  ;
-
-
-
-
-
-
-  (* test_ship_compare "Tests two ships which are not equal" 
-     ship_destroyer ship_sub GL *)
-
-]
+                assert_equal false  (alive ship_destroyer));]
 
 let board_tests = []
 

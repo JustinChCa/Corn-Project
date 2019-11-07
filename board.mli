@@ -1,8 +1,8 @@
 open Ship
 
 
-exception Missed of int * int
-exception Taken of int * int
+exception Missed of string
+exception Taken of string
 
 module type Board = sig
   (**AF: The array [| r1; r2; r3; r4;... |] is the array of the row arrays
@@ -26,9 +26,9 @@ module type Board = sig
       another turn if they do. *)
   val hit: t -> int * int -> unit
 
-  (** [dis_board b bool] displays the player's board in if bool is [true] and
-      displays the enemy's board if bool is [false] *)
-  val dis_board: t -> bool -> unit
+  (** [str_board board self] is [board] in string list form with each element
+      representing a row, in player form iff self else enemy form.*)
+  val str_board: t -> bool -> string list
 
   (** [columns b] gives the number of columns in the board [b]. This is equal to
       the size of each row in [b] *)

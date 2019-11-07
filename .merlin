@@ -1,0 +1,9 @@
+B _build
+PKG oUnit2
+PKG str
+PKG unix
+PKG qcheck
+PKG ocamlbuild
+PKG bisect_ppx-ocamlbuild
+PKG graphics
+PKG ANSITerminal

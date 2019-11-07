@@ -6,15 +6,15 @@ module type Board = sig
   type t 
   val create: int -> int -> t
   val hit: t -> int*int -> unit
-  val dis_board: t -> bool -> unit
+  val str_board: t -> bool -> string list
   val columns: t -> int
   val rows: t -> int
   val taken : t -> (int * int) list -> (int * int) list
   val place_ship: t -> ShipMaker.t -> unit
 end
 
-exception Missed of int * int
-exception Taken of int * int
+exception Missed of string
+exception Taken of string
 
 module BoardMaker = struct
   type tile = Miss | Water of ShipMaker.t option
@@ -26,41 +26,33 @@ module BoardMaker = struct
   let hit board (x, y) = 
     match board.(x).(y) with
     | Water (None) -> print_endline "You missed"; board.(x).(y) <- Miss
-    | Miss -> raise (Missed (x, y))
+    | Miss -> raise (Missed ("You have already missed this spot."))
     | Water (Some j) -> ShipMaker.hit (x, y) j
+
+  let rec fold f arr i acc =
+    match arr.(i) with
+    | exception Invalid_argument e -> acc
+    | s -> fold f arr (i+1) (f i s acc) 
 
   (** [h_partition str n] creates the horizontal partition needed for the 
       console command graphic. *)
   let rec h_partition str n = 
-    if n > 0 then h_partition (str^"==") (n-1) else str
+    if n > 0 then h_partition (str^"----") (n-1) else str
 
-  (** [opt_to_str x] converts an [opt] to its corresponding string for the 
-      console command graphic.*)
-  let opt_to_str self (rint:int) (cint:int) x = 
-    match x with
-    |Miss -> print_string "|o"
-    |Water None -> print_string "| "
-    |Water Some s -> if ShipMaker.calive (rint,cint) s then 
-        if self then print_string "|s" else print_string "| " 
-      else print_string "|x"
+  (** [opt_to_str x] converts an [opt] to its corresponding string.*)
+  let opt_to_str self coor = function
+    | Miss -> "| O "
+    | Water (None) -> "|   "
+    | Water (Some s) -> if ShipMaker.calive coor s then
+        begin if self then "| S " else "|   " end else "| X "
 
-  (** [dis_row str r] displays the console command graphic of a row [r].*)
-  let dis_row self str (rint:int) r  =
-    Array.iteri (opt_to_str self rint) r;
-    print_endline "|";
-    print_endline str;;
+  (** [str_row self row y] is the [string] of [row]*)
+  let str_row self row y =
+    (fold (fun x s acc -> acc ^ opt_to_str self (x, y) s) row 0 "") ^ "|"
 
-<<<<<<< HEAD
-  let dis_board board self = 
-    let partition = h_partition "-" (Array.length board.(0)) in
-=======
-  (* (TODO) display the coordinates on the top and left of the board. *)
-
-  let dis_board (b:t) self = 
-    let partition = h_partition "=" (Array.length b.(1)) in
->>>>>>> 6415c48b2a48871eb8af84df9194873bedd736cd
-    print_endline partition;
-    Array.iteri (dis_row self partition) board;;
+  let str_board board self=
+    let part = h_partition "-" (Array.length board) in
+    List.rev (fold (fun y r acc -> part::str_row self r y::acc) board 0 [part])
 
   let columns board = Array.length board.(0)
 
@@ -70,11 +62,11 @@ module BoardMaker = struct
     | [] -> []
     | (x,y)::t -> match board.(x).(y) with 
       | Water (None) -> (x,y)::taken board t
-      | Water (Some j) -> raise (Taken (x, y))
+      | Water (Some j) -> raise (Taken "Ship is overlapping with another.")
       | Miss -> failwith "Miss shouldn't exist yet."
 
   let place_ship board ship = 
     List.iter (fun (x,y) -> board.(x).(y) <- Water (Some ship)) 
       (ShipMaker.coordinates ship)
-
 end
+

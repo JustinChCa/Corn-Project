@@ -1,6 +1,7 @@
 open Ship
 open Board
 
+
 module type Player = sig 
   type t 
 
@@ -14,7 +15,7 @@ module type Player = sig
 
   val get_board: t -> BoardMaker.t
 
-  val hit : t -> unit
+  val hit : t -> int * int -> unit
 
 end
 
@@ -38,13 +39,7 @@ module PlayerMaker = struct
 
   let get_name t = t.name
 
-
-  let rec hit enemy = 
-    try BoardMaker.hit (enemy.board) (read_int (), read_int ()) with
-    | Missed (x,y)-> print_endline "You've already missed this spot. Try again";
-      hit enemy
-    | Hitted -> print_endline "You've already hit this spot. Try again";
-      hit enemy
-
+  let hit enemy coor = 
+    BoardMaker.hit (enemy.board) coor
 end 
 

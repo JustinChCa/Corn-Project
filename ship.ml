@@ -11,7 +11,7 @@ module type Ship = sig
   val coordinates : t -> coor list
 end
 
-exception Hitted
+exception Hitted of string
 
 module ShipMaker = struct
   type t = (coor * bool) list ref
@@ -28,7 +28,7 @@ module ShipMaker = struct
       | (c, b)::t -> 
         if c = coor then 
           begin if b then (print_endline "You Hit."; (c, false)::t) 
-            else raise Hitted end
+            else raise (Hitted "You have already hit this spot.") end
         else (c,b)::hit_helper t in
     ship := hit_helper !ship
 

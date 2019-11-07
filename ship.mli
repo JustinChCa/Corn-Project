@@ -3,7 +3,7 @@
 (** [coor] represents a coordination in the form of Letter-Number *)
 type coor = int * int
 
-exception Hitted
+exception Hitted of string
 (** A [Ship] has coordinates that have possibly been hit. *)
 module type Ship = sig
 

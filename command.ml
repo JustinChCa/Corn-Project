@@ -10,70 +10,36 @@ type command =
   | Quit
   | Play
 
-(**Raised when given an invalid command.*)
-exception Malformed 
-
-(**Raised when a given cordinate is out of the Board's bounds *)
-exception Out_of_Bounds
-
 (**Raised when a given cordinate cannot be numericaly represented. *)
-exception Bad_Cordinates
-
-(**Raised when an illegal argument is given. *)
-exception Illegal
-
-(**Raised when a desired ship does not exist. *)
-exception DNE
+exception BadCoord of string
+let error_bad_coord = "Bad coordinates, must be in the form of L.#."
 
 
-(**[find_cordinates args] is the numerical tuple representation of a given string 
-   coordinate representation
-   Example: "A5" -> "(0,4)"*)
-let find_cordinates args = 
-  let regex= Str.regexp "^[A-Z][0-9]$\\|^[A-Z][0-9][0-9]$" in 
-  let head = args in 
-  match Str.search_forward regex head 0 with 
-  | exception Not_found -> raise Bad_Cordinates 
-  | t -> match Str.matched_string head with
-    | k -> let numle = (int_of_char (String.get (String.sub k 0 1) 0)-65) in 
-      let num = int_of_string (String.sub k 1 ((String.length k)-1))-1 in
-      if num > 25 then raise Out_of_Bounds else (numle, num)
+let chars = Str.regexp "[A-Z]+"
+let numbers = Str.regexp "[0-9]+"
 
+let rec int_of_l s c =
+  if c = 0 then 0 else
+    int_of_float 
+      ((float_of_int (Char.code (s.[c-1]) - 64)) *. 
+       (26.0 ** float_of_int (String.length s - c))) + int_of_l s (c-1)
 
-let parse_attack args =
-  Attack (find_cordinates (List.hd args))
+let find_coords line = 
+  let line = String.uppercase_ascii 
+      (String.concat "" (String.split_on_char ' ' line)) in
+  try begin
+    match Str.search_forward chars line 0 with
+    | t -> let x = Str.matched_string line in begin
+        match Str.search_forward numbers line (Str.match_end ()) with
+        | t -> (int_of_l x (String.length x) - 1, 
+                int_of_string (Str.matched_string line)) end end
+  with
+  | Not_found -> raise (BadCoord error_bad_coord)
 
-let parse_place args =
-  let get_ship ship = 
-    match ship with 
-    | "battleship" -> "battleship"
-    | "carrier" -> "carrier"
-    | "destroyer" -> "destroyer"
-    | "sub" -> "sub"
-    | "patrol" -> "patrol"
-    | _ -> raise DNE
-  in 
-  let get_orientation org =
-    match org with 
-    | "vertical" -> Vertical
-    | "horizontal" -> Horizontal
-    | _ -> raise Malformed
-  in 
-  let cords = find_cordinates (List.hd args) in 
-  let ship = get_ship (args |> List.tl |> List.hd) in
-  let orientation = get_orientation (args |> List.tl |> List.tl |> List.hd) in 
-  Place (ship,cords,orientation)
-
-(**[parse command] is the command that the user wants to execute given a string
-   [command]
-   Raises: [Malformed] if the string [command] cannot be parsed to a valid command *)
-let parse command =
-  let str_lst = String.split_on_char ' ' command in 
-  match List.hd str_lst with 
-  | "attack" -> if List.length str_lst < 2 then raise Malformed 
-    else parse_attack (List.tl str_lst)
-  | "quit" -> Quit
-  | "play" -> Play
-  | "place" -> if List.length str_lst < 4 then raise Malformed else parse_place (List.tl str_lst)
-  | _ -> raise Malformed
-
+let orientation line =
+  match String.lowercase_ascii line with 
+  | "v"
+  | "vertical" -> false
+  | "h"
+  | "horizontal" -> true
+  | _ -> raise (Invalid_argument "Vertical or Horizontal only.")

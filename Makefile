@@ -5,7 +5,7 @@ MLIS=$(MODULES:=.mli)
 MAIN=main.byte
 TEST=test.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind -plugin-tag 'package(bisect_ppx-ocamlbuild)'
-PKGS=unix,oUnit,str,qcheck
+PKGS=unix,oUnit,str,ANSITerminal
 
 default: build
 	utop
@@ -32,12 +32,8 @@ finalcheck: check
 bisect: clean bisect-test
 	bisect-ppx-report -I _build -html report bisect0001.out
 
-perf: 
-	$(OCAMLBUILD) performanceTest.native && ./performanceTest.native
-	gnuplot perf.p
-
 zip:
-	zip battleship.zip *.ml* _tags Makefile 
+	zip bs_src.zip *.ml* _tags Makefile 
 	
 docs: docs-public docs-private
 	
@@ -54,4 +50,4 @@ docs-private: build
 
 clean:
 	ocamlbuild -clean
-	rm -rf doc.public doc.private report search_src.zip bisect*.out
+	rm -rf bs_src.zip

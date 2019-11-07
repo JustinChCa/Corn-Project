@@ -1,6 +1,8 @@
 #directory "_build";;
 #require "str";;
 #require "qcheck";;
+#require "graphics";;
+#require "ANSITerminal";;
 #load_rec "board.cmo";;
 #load_rec "command.cmo";;
 #load_rec "ship.cmo";;
