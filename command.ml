@@ -10,8 +10,6 @@ type command =
   | Quit
   | Play
 
-
-
 (**Raised when given an invalid command.*)
 exception Malformed 
 
@@ -44,7 +42,6 @@ let find_cordinates args =
 
 let parse_attack args =
   Attack (find_cordinates (List.hd args))
-
 
 let parse_place args =
   let get_ship ship = 

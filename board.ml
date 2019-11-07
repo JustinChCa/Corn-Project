@@ -2,53 +2,32 @@
 open Ship
 
 module type Board = sig
-  type opt = Miss | Water of ShipMaker.t option
-  exception Overlap
-  exception OutOfBounds
+  type tile = Miss | Water of ShipMaker.t option
   type t 
-  val make_board: int -> int -> t
+  val create: int -> int -> t
   val hit: t -> int*int -> unit
   val dis_board: t -> bool -> unit
   val columns: t -> int
   val rows: t -> int
-  val place_ship_h: t -> ShipMaker.t -> unit
-  val place_ship_v: t -> ShipMaker.t -> unit
+  val taken : t -> (int * int) list -> (int * int) list
+  val place_ship: t -> ShipMaker.t -> unit
 end
 
+exception Missed of int * int
+exception Taken of int * int
+
 module BoardMaker = struct
+  type tile = Miss | Water of ShipMaker.t option
+  type t = tile array array 
 
+  let create x y = 
+    Array.make_matrix x y (Water None)
 
-  type opt = Miss| Water of ShipMaker.t option
-
-  exception Overlap
-  exception OutOfBounds
-
-
-  type t = opt array array 
-
-  let make_board x y : t= Array.make_matrix x y (Water None)
-
-
-  let hit (b:t) (pair:int*int) : unit = 
-    match pair with
-    |(r, c) -> begin
-        match (b.(r)).(c) with 
-        | Miss -> print_endline "You have already attacked here and missed."
-        (*TODO: go to the next player's turn *)
-        | Water op -> begin
-            match op with 
-            | None -> begin
-                b.(r).(c) <- Miss; 
-                print_endline "You missed.";
-              end
-            | Some ship -> if ShipMaker.calive (r,c) ship then begin
-                ShipMaker.hit (r,c) ship;
-                print_endline "You hit.";
-              end else
-                print_endline "You have already attacked here and hit.";
-          end
-      end
-
+  let hit board (x, y) = 
+    match board.(x).(y) with
+    | Water (None) -> print_endline "You missed"; board.(x).(y) <- Miss
+    | Miss -> raise (Missed (x, y))
+    | Water (Some j) -> ShipMaker.hit (x, y) j
 
   (** [h_partition str n] creates the horizontal partition needed for the 
       console command graphic. *)
@@ -59,12 +38,11 @@ module BoardMaker = struct
       console command graphic.*)
   let opt_to_str self (rint:int) (cint:int) x = 
     match x with
-    |Miss -> print_string "|x"
+    |Miss -> print_string "|o"
     |Water None -> print_string "| "
     |Water Some s -> if ShipMaker.calive (rint,cint) s then 
         if self then print_string "|s" else print_string "| " 
-      else print_string "|o"
-
+      else print_string "|x"
 
   (** [dis_row str r] displays the console command graphic of a row [r].*)
   let dis_row self str (rint:int) r  =
@@ -72,51 +50,24 @@ module BoardMaker = struct
     print_endline "|";
     print_endline str;;
 
-
-  let dis_board (b:t) self = 
-    let partition = h_partition "=" (Array.length b.(1)) in
+  let dis_board board self = 
+    let partition = h_partition "-" (Array.length board.(0)) in
     print_endline partition;
-    Array.iteri (dis_row self partition) b;;
+    Array.iteri (dis_row self partition) board;;
 
+  let columns board = Array.length board.(0)
 
-  let columns (b:t) = Array.length b.(1)
+  let rows board = Array.length board
 
-  let rows (b:t) = Array.length b
+  let rec taken board = function
+    | [] -> []
+    | (x,y)::t -> match board.(x).(y) with 
+      | Water (None) -> (x,y)::taken board t
+      | Water (Some j) -> raise (Taken (x, y))
+      | Miss -> failwith "Miss shouldn't exist yet."
 
-  (** [check_overlap b ship pair] checks if there is an overlap between the
-      ships in board [b].
-      Raises: Overlap if the ship [ship] will overlap with existing ship. *)
-  let check_overlap b pair = 
-    match b.(fst(fst pair)).(snd (fst pair)) with
-    |Water None -> ()
-    | _ -> raise Overlap
-
-  (** [place_pair b ship pair] places the ship [ship] into the coordinate
-      [pair] in the board [b].
-      Raises: Overlap if the ship will overlap with another ship. *)
-  let place_pair b ship pair = 
-    match b.(fst(fst pair)).(snd (fst pair)) with
-    |Water None -> b.(fst(fst pair)).(snd (fst pair)) <- Water (Some ship)
-    | _ -> failwith "impossible, check_overlap failed"
-
-  let place_ship_h (b:t) (ship:ShipMaker.t) =
-    match !ship with
-    | ((_,a),_)::_ -> begin
-        if a+(List.length !ship) > (columns b) then 
-          raise OutOfBounds else (
-          List.iter (check_overlap b) !ship;
-          List.iter (place_pair b ship) !ship;)
-      end
-    |_ -> raise (Invalid_argument "ship is bad")
-
-  let place_ship_v (b:t) (ship:ShipMaker.t) =     
-    match !ship with
-    | ((a,_),_)::_ -> begin
-        if a+(List.length !ship) > (rows b) then 
-          raise OutOfBounds else (
-          List.iter (check_overlap b) !ship;
-          List.iter (place_pair b ship) !ship;)
-      end
-    |_ -> raise (Invalid_argument "ship is bad")
+  let place_ship board ship = 
+    List.iter (fun (x,y) -> board.(x).(y) <- Water (Some ship)) 
+      (ShipMaker.coordinates ship)
 
 end

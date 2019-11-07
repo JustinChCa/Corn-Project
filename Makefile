@@ -1,7 +1,8 @@
-MODULES=ship board authors commands player
+MODULES=ship board authors command player main
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
+MAIN=main.byte
 TEST=test.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind -plugin-tag 'package(bisect_ppx-ocamlbuild)'
 PKGS=unix,oUnit,str,qcheck
@@ -12,6 +13,9 @@ default: build
 build:
 	$(OCAMLBUILD) $(OBJECTS)
 
+play:
+	$(OCAMLBUILD) $(MAIN) && ./$(MAIN)
+	
 test:
 	$(OCAMLBUILD) -tag debug $(TEST) && ./$(TEST)
 
@@ -33,7 +37,7 @@ perf:
 	gnuplot perf.p
 
 zip:
-	zip search_src.zip *.ml* _tags Makefile analysis.pdf
+	zip battleship.zip *.ml* _tags Makefile 
 	
 docs: docs-public docs-private
 	
