@@ -12,7 +12,7 @@ let board5 = Board.make_board 5 5;;
 let board47 = Board.make_board 4 7;;
 
 let lst5 = [(5,7);(6,7);(7,7);(8,7);(9,7)]
-let lst4 = [(3,7);(3,7);(3,8);(3,9)]
+let lst4 = [(3,6);(3,7);(3,8);(3,9)]
 let lst3 = [(1,1);(1,2);(1,3)]
 let lst2 = [(2,1);(3,1)]
 let lstbad = [(6,5);(6,6);(6,7);(6,8)]

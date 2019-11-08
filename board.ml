@@ -49,6 +49,8 @@ module BoardMaker = struct
           end
       end
 
+  (* let rec top_axis str n acc = 
+     if acc < then top_axis (str^"|"^"") (n-1) else str  *)
 
   (** [h_partition str n] creates the horizontal partition needed for the 
       console command graphic. *)
@@ -64,7 +66,6 @@ module BoardMaker = struct
     |Water Some s -> if ShipMaker.calive (rint,cint) s then 
         if self then print_string "|s" else print_string "| " 
       else print_string "|o"
-
 
   (** [dis_row str r] displays the console command graphic of a row [r].*)
   let dis_row self str (rint:int) r  =
