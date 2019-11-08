@@ -9,17 +9,23 @@
 *.cmxa
 
 # ocamlbuild working directory
-_build/
+# assignment
+doc.public
+doc.private
+bs_src.zip
 
-# ocamlbuild targets
-*.byte
+# ocaml
+*.cmo
+*.cma
+*.cmi
+*.out
+*.cmx
 *.native
+*.byte
+_build
 
-# oasis generated files
-setup.data
-setup.log
-
-# Merlin configuring file for Vim and Emacs
-.merlin
-
-doc.public/
+# temporary files
+*.swp
+*~
+\#*\#
+.DS_Store
