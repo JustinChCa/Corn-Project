@@ -1,7 +1,6 @@
 open OUnit2
 open Command
 
-
 module Player = Player.PlayerMaker
 
 module Board = Board.BoardMaker
