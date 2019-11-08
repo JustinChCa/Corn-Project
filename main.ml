@@ -51,7 +51,8 @@ let print_double b1 b2 =
 let rec hit player enemy = 
   ignore (Sys.command "clear");
   print_double (PlayerMaker.get_board player) (PlayerMaker.get_board enemy); 
-  a_endline (PlayerMaker.get_name player ^ "'s Turn.");
+  a_endline (PlayerMaker.get_name player ^ 
+             "'s Turn.\nEnter target coordinates");
   try PlayerMaker.hit enemy (Command.find_coords (read_line ())) with
   | BadCoord s 
   | Missed s
