@@ -1,42 +1,37 @@
 open Ship
 open Board
 
+
 module type Player = sig 
   type t 
 
-  val init_player: ShipMaker.t list -> BoardMaker.t -> string -> t
+  val create : ShipMaker.t list -> BoardMaker.t -> string -> t
 
   val get_name: t -> string
 
-  val is_alive: t -> bool
+  val alive: t -> bool
 
   val get_ships: t -> ShipMaker.t list
 
-
   val get_board: t -> BoardMaker.t
+
+  val hit : t -> int * int -> unit
 
 end
 
 module PlayerMaker = struct 
-
-  type t = {mutable ships: ShipMaker.t list;
+  type t = {ships: ShipMaker.t list;
             board: BoardMaker.t;
-            mutable ships_alive: int;
-            name: string
-           }
+            name: string}
 
-  let init_player ships board name = {
+  let create ships board name = {
     ships= ships;
     board= board;
-    ships_alive= List.length ships;
-    name= name
+    name= name;
   }
 
-  let is_alive t =
-    let num_alive = List.fold_left (fun accum el -> 
-        if ShipMaker.alive el then accum+1 else accum) 0 t.ships in
-    t.ships_alive <- num_alive;
-    if t.ships_alive = 0 then false else true
+  let alive player =
+    List.exists (fun a -> ShipMaker.alive a) player.ships
 
   let get_ships t = t.ships
 
@@ -44,6 +39,7 @@ module PlayerMaker = struct
 
   let get_name t = t.name
 
-
+  let hit enemy coor = 
+    BoardMaker.hit (enemy.board) coor
 end 
 

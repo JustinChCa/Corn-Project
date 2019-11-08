@@ -1,7 +1,8 @@
 #directory "_build";;
 #require "str";;
-#require "qcheck";;
+#require "ANSITerminal";;
 #load_rec "board.cmo";;
-#load_rec "commands.cmo";;
+#load_rec "command.cmo";;
 #load_rec "ship.cmo";;
-
+#load_rec "player.cmo";;
+#load_rec "main.cmo";;

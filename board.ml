@@ -2,53 +2,61 @@
 open Ship
 
 module type Board = sig
-  type opt = Miss | Water of ShipMaker.t option
-  exception Overlap
-  exception OutOfBounds
+  type tile = Miss | Water of ShipMaker.t option
   type t 
-  val make_board: int -> int -> t
+  val create: int -> int -> t
   val hit: t -> int*int -> unit
-  val dis_board: t -> bool -> unit
+  val str_board: t -> bool -> string list
   val columns: t -> int
   val rows: t -> int
-  val place_ship_h: t -> ShipMaker.t -> unit
-  val place_ship_v: t -> ShipMaker.t -> unit
+  val taken : t -> (int * int) list -> (int * int) list
+  val place_ship: t -> ShipMaker.t -> ShipMaker.t
 end
 
+exception Missed of string
+exception Taken of string
+
 module BoardMaker = struct
+  type tile = Miss | Water of ShipMaker.t option
+  type t = tile array array 
 
+  let create x y = 
+    Array.make_matrix x y (Water None)
 
-  type opt = Miss| Water of ShipMaker.t option
+  let hit board (x, y) = 
+    match board.(y).(x) with
+    | Water (None) -> print_endline "You missed"; board.(y).(x) <- Miss
+    | Miss -> raise (Missed ("You have already missed this spot."))
+    | Water (Some j) -> ShipMaker.hit (x, y) j
 
-  exception Overlap
-  exception OutOfBounds
+  let rec fold f arr i acc =
+    match arr.(i) with
+    | exception Invalid_argument e -> acc
+    | s -> fold f arr (i+1) (f i s acc) 
 
+  (** [h_partition str n] creates the horizontal partition needed for the 
+      console command graphic. *)
+  let rec h_partition str n = 
+    if n > 0 then h_partition (str^"----") (n-1) else str
 
-  type t = opt array array 
+  (** [opt_to_str x] converts an [opt] to its corresponding string.*)
+  let opt_to_str self coor = function
+    | Miss -> "| O "
+    | Water (None) -> "|   "
+    | Water (Some s) -> if ShipMaker.calive coor s then
+        begin if self then "| S " else "|   " end else "| X "
 
-  let make_board x y : t= Array.make_matrix x y (Water None)
+  (** [str_row self row y] is the [string] of [row]*)
+  let str_row self row y =
+    (fold (fun x s acc -> acc ^ opt_to_str self (x, y) s) row 0 "") ^ "|"
 
+  let str_board board self=
+    let part = h_partition "-" (Array.length board) in
+    List.rev (fold (fun y r acc -> part::str_row self r y::acc) board 0 [part])
 
-  let hit (b:t) (pair:int*int) : unit = 
-    match pair with
-    |(r, c) -> begin
-        match (b.(r)).(c) with 
-        | Miss -> print_endline "You have already attacked here and missed."
-        (*TODO: go to the next player's turn *)
-        | Water op -> begin
-            match op with 
-            | None -> begin
-                b.(r).(c) <- Miss; 
-                print_endline "You missed.";
-              end
-            | Some ship -> if ShipMaker.calive (r,c) ship then begin
-                ShipMaker.hit (r,c) ship;
-                print_endline "You hit.";
-              end else
-                print_endline "You have already attacked here and hit.";
-          end
-      end
+  let columns board = Array.length board.(0)
 
+<<<<<<< HEAD
   (* let rec top_axis str n acc = 
      if acc < then top_axis (str^"|"^"") (n-1) else str  *)
 
@@ -122,3 +130,19 @@ module BoardMaker = struct
     |_ -> raise (Invalid_argument "ship is bad")
 
 end
+=======
+  let rows board = Array.length board
+
+  let rec taken board = function
+    | [] -> []
+    | (x,y)::t -> match board.(y).(x) with 
+      | Water (None) -> (x,y)::taken board t
+      | Water (Some j) -> raise (Taken "Ship is overlapping with another.")
+      | Miss -> failwith "Miss shouldn't exist yet."
+
+  let place_ship board ship = 
+    List.iter (fun (x,y) -> board.(y).(x) <- Water (Some ship)) 
+      (ShipMaker.coordinates ship); ship
+end
+
+>>>>>>> 0cda0c3d32427f27c55a6fe7b67b8e6773d1e1b5
