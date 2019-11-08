@@ -56,81 +56,6 @@ module BoardMaker = struct
 
   let columns board = Array.length board.(0)
 
-<<<<<<< HEAD
-  (* let rec top_axis str n acc = 
-     if acc < then top_axis (str^"|"^"") (n-1) else str  *)
-
-  (** [h_partition str n] creates the horizontal partition needed for the 
-      console command graphic. *)
-  let rec h_partition str n = 
-    if n > 0 then h_partition (str^"==") (n-1) else str
-
-  (** [opt_to_str x] converts an [opt] to its corresponding string for the 
-      console command graphic.*)
-  let opt_to_str self (rint:int) (cint:int) x = 
-    match x with
-    |Miss -> print_string "|x"
-    |Water None -> print_string "| "
-    |Water Some s -> if ShipMaker.calive (rint,cint) s then 
-        if self then print_string "|s" else print_string "| " 
-      else print_string "|o"
-
-  (** [dis_row str r] displays the console command graphic of a row [r].*)
-  let dis_row self str (rint:int) r  =
-    Array.iteri (opt_to_str self rint) r;
-    print_endline "|";
-    print_endline str;;
-
-  (* (TODO) display the coordinates on the top and left of the board. *)
-
-  let dis_board (b:t) self = 
-    let partition = h_partition "=" (Array.length b.(1)) in
-    print_endline partition;
-    Array.iteri (dis_row self partition) b;;
-
-
-  let columns (b:t) = Array.length b.(1)
-
-  let rows (b:t) = Array.length b
-
-  (** [check_overlap b ship pair] checks if there is an overlap between the
-      ships in board [b].
-      Raises: Overlap if the ship [ship] will overlap with existing ship. *)
-  let check_overlap b pair = 
-    match b.(fst(fst pair)).(snd (fst pair)) with
-    |Water None -> ()
-    | _ -> raise Overlap
-
-  (** [place_pair b ship pair] places the ship [ship] into the coordinate
-      [pair] in the board [b].
-      Raises: Overlap if the ship will overlap with another ship. *)
-  let place_pair b ship pair = 
-    match b.(fst(fst pair)).(snd (fst pair)) with
-    |Water None -> b.(fst(fst pair)).(snd (fst pair)) <- Water (Some ship)
-    | _ -> failwith "impossible, check_overlap failed"
-
-  let place_ship_h (b:t) (ship:ShipMaker.t) =
-    match !ship with
-    | ((_,a),_)::_ -> begin
-        if a+(List.length !ship) > (columns b) then 
-          raise OutOfBounds else (
-          List.iter (check_overlap b) !ship;
-          List.iter (place_pair b ship) !ship;)
-      end
-    |_ -> raise (Invalid_argument "ship is bad")
-
-  let place_ship_v (b:t) (ship:ShipMaker.t) =     
-    match !ship with
-    | ((a,_),_)::_ -> begin
-        if a+(List.length !ship) > (rows b) then 
-          raise OutOfBounds else (
-          List.iter (check_overlap b) !ship;
-          List.iter (place_pair b ship) !ship;)
-      end
-    |_ -> raise (Invalid_argument "ship is bad")
-
-end
-=======
   let rows board = Array.length board
 
   let rec taken board = function
@@ -145,4 +70,3 @@ end
       (ShipMaker.coordinates ship); ship
 end
 
->>>>>>> 0cda0c3d32427f27c55a6fe7b67b8e6773d1e1b5

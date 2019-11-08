@@ -1,6 +1,7 @@
 #directory "_build";;
 #require "str";;
 #require "ANSITerminal";;
+#require "OUnit2";;
 #load_rec "board.cmo";;
 #load_rec "command.cmo";;
 #load_rec "ship.cmo";;
