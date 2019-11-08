@@ -1,10 +1,11 @@
-MODULES=ship board authors commands player
+MODULES=ship board authors command player main
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
+MAIN=main.byte
 TEST=test.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind -plugin-tag 'package(bisect_ppx-ocamlbuild)'
-PKGS=unix,oUnit,str,qcheck
+PKGS=unix,oUnit,str,ANSITerminal
 
 default: build
 	utop
@@ -12,6 +13,9 @@ default: build
 build:
 	$(OCAMLBUILD) $(OBJECTS)
 
+play:
+	$(OCAMLBUILD) $(MAIN) && ./$(MAIN)
+	
 test:
 	$(OCAMLBUILD) -tag debug $(TEST) && ./$(TEST)
 
@@ -28,12 +32,8 @@ finalcheck: check
 bisect: clean bisect-test
 	bisect-ppx-report -I _build -html report bisect0001.out
 
-perf: 
-	$(OCAMLBUILD) performanceTest.native && ./performanceTest.native
-	gnuplot perf.p
-
 zip:
-	zip search_src.zip *.ml* _tags Makefile analysis.pdf
+	zip bs_src.zip *.ml* _tags Makefile Install.md bs.txt
 	
 docs: docs-public docs-private
 	
@@ -50,4 +50,4 @@ docs-private: build
 
 clean:
 	ocamlbuild -clean
-	rm -rf doc.public doc.private report search_src.zip bisect*.out
+	rm -rf bs_src.zip

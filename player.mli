@@ -6,13 +6,13 @@ module type Player = sig
 
   (**[init_player ships board name] is a Player with a board [board], 
      ships [ships], and with a name [name] *)
-  val init_player: ShipMaker.t list -> BoardMaker.t -> string -> t
+  val create : ShipMaker.t list -> BoardMaker.t -> string -> t
 
   (**[get_name t] is the name of the player [t] *)
   val get_name: t -> string
 
   (**[is_alive t] checks whether player [t] is alive *)
-  val is_alive: t -> bool
+  val alive: t -> bool
 
   (**[get_ships t] is the ships of player [t] *)
   val get_ships: t -> ShipMaker.t list
@@ -20,6 +20,7 @@ module type Player = sig
   (**[get_board t] is the board of player [t] *)
   val get_board: t -> BoardMaker.t
 
+  val hit: t -> int * int -> unit
 
 end
 
