@@ -25,21 +25,20 @@ let rec int_of_l s c =
        (26.0 ** float_of_int (String.length s - c))) + int_of_l s (c-1)
 
 let find_coords line = 
-  let line = String.uppercase_ascii 
-      (String.concat "" (String.split_on_char ' ' line)) in
-  try begin
-    match Str.search_forward chars line 0 with
-    | t -> let x = Str.matched_string line in begin
-        match Str.search_forward numbers line (Str.match_end ()) with
-        | t -> (int_of_l x (String.length x) - 1, 
-                int_of_string (Str.matched_string line)) end end
-  with
-  | Not_found -> raise (BadCoord error_bad_coord)
+  let line = String.uppercase_ascii line in
+  match Str.search_forward chars line 0 with
+  | t -> let x = Str.matched_string line in begin
+      match Str.search_forward numbers line (Str.match_end ()) with
+      | t -> (int_of_string (Str.matched_string line), 
+              int_of_l x (String.length x) - 1)
+      | exception Not_found -> raise (BadCoord error_bad_coord) end
+  | exception Not_found -> raise (BadCoord error_bad_coord)
+
 
 let orientation line =
   match String.lowercase_ascii line with 
   | "v"
-  | "vertical" -> false
+  | "vertical" -> true
   | "h"
-  | "horizontal" -> true
+  | "horizontal" -> false
   | _ -> raise (Invalid_argument "Vertical or Horizontal only.")

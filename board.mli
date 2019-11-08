@@ -43,7 +43,7 @@ module type Board = sig
   val taken : t -> (int * int) list -> (int * int) list
 
   (** [place_ship board ship] puts [ship] into the [board].*)
-  val place_ship : t -> ShipMaker.t -> unit
+  val place_ship : t -> ShipMaker.t -> ShipMaker.t
 
 
 end

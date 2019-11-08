@@ -3,8 +3,9 @@ open Command
 open Ship
 open Board
 
-let style = [ANSITerminal.white; ANSITerminal.Blink]
+let style = [ANSITerminal.white;]
 let a_endline s = ANSITerminal.print_string style (s ^ "\n")
+
 let read_txt txt = 
   let rec t_help txt = 
     match input_line txt with
@@ -16,8 +17,7 @@ let title = read_txt (open_in "bs.txt")
 
 let switch () = 
   ignore (Sys.command "clear"); 
-  ignore (read_line (a_endline "Please switch and hit return."));
-  ignore (Sys.command "clear")
+  ignore (read_line (a_endline "Please switch and hit return."))
 
 let normal_ship (x, y) = function
   | false -> [(x, y); (x+1, y); (x+2,y)]
@@ -27,11 +27,12 @@ let l_ship (x,y) = function
   | false -> [(x, y); (x+1, y); (x+2,y); (x+2, y+1)]
   | true -> [(x, y); (x, y+1); (x,y+2); (x+1, y+2)]
 
-let ship (x,y) = function
-  | true -> [(x,y)]
-  | false -> [(x,y)]
+let dot (x,y) = function
+  | false -> [(x,y); (x+1, y)]
+  | true -> [(x,y); (x, y+1)]
 
-let ships = [(ship, "ship")]
+let ship_list = [(dot, "2 length ship"); (normal_ship, "3 length ship"); 
+                 (l_ship, "L ship")]
 
 let rec combine l1 l2 =
   match l1, l2 with
@@ -47,27 +48,30 @@ let print_double b1 b2 =
   combine (BoardMaker.str_board b1 true) (BoardMaker.str_board b2 false)
   |> List.iter (fun x -> a_endline x)
 
-let rec hit enemy = 
+let rec hit player enemy = 
+  ignore (Sys.command "clear");
+  print_double (PlayerMaker.get_board player) (PlayerMaker.get_board enemy); 
+  a_endline (PlayerMaker.get_name player ^ "'s Turn.");
   try PlayerMaker.hit enemy (Command.find_coords (read_line ())) with
   | BadCoord s 
   | Missed s
-  | Hitted s -> a_endline (s ^ "\nPress Enter to try again.");
-    hit enemy
-
+  | Hitted s -> 
+    ignore (read_line (a_endline (s ^ "\nPress Enter to try again.")));
+    hit player enemy
 
 let rec create_ship f name board=
   ignore (Sys.command "clear");
   a_endline ("Place " ^ name);
   print_board (board);
-  match f (Command.find_coords (read_line())) 
-          (Command.orientation (read_line ()))
-        |> BoardMaker.taken board
-        |> ShipMaker.create 
+  try f (Command.find_coords (read_line (a_endline "Enter coordinates:"))) 
+        (Command.orientation (read_line (a_endline "Enter orientation:")))
+      |> BoardMaker.taken board
+      |> ShipMaker.create 
+      |> BoardMaker.place_ship board
   with
-  | t -> BoardMaker.place_ship board t; t
-  | exception BadCoord s 
-  | exception Invalid_argument s  
-  | exception Taken s ->
+  | BadCoord s 
+  | Invalid_argument s  
+  | Taken s -> 
     ignore (read_line (a_endline (s ^ "\nPress Enter to try again.")));
     create_ship f name board
 
@@ -75,7 +79,7 @@ let rec place_ships board = function
   | [] -> []
   | (f, name)::t -> create_ship f name board::place_ships board t
 
-let create_player size = 
+let create_player size ships= 
   ignore (Sys.command "clear");
   a_endline title;
   let name = read_line (a_endline "Enter name for Player: ") in
@@ -84,32 +88,36 @@ let create_player size =
   ignore (Sys.command "clear");
   print_board board;
   ignore (read_line (a_endline "This is your board, press enter to continue."));
-  Player.PlayerMaker.create ships board name
-
-let start () = 
-  ignore (Sys.command "clear");
-  a_endline title;
-  let size = read_int (a_endline "Enter size of board: ") in
-  let p1 = create_player size and p2 = switch (); create_player size in
-  switch (); (p1, p2)
+  PlayerMaker.create ships board name
 
 let rec turn (player, enemy) =
-  let () = 
-    (ignore (Sys.command "clear");
-     print_double (PlayerMaker.get_board player) (PlayerMaker.get_board enemy); 
-     a_endline (PlayerMaker.get_name player ^ "'s Turn.")) in
-  ignore (Sys.command "clear");
-  hit enemy;
+  switch ();
+  hit player enemy;
   print_double (PlayerMaker.get_board player) (PlayerMaker.get_board enemy); 
   ignore (read_line (a_endline "Enter to continue.")); 
   if not (PlayerMaker.alive enemy) then 
     a_endline (PlayerMaker.get_name player ^ " wins.")
   else
-    (switch (); turn (enemy, player))
+    turn (enemy, player)
+
+let rec get_size () = 
+  ignore (Sys.command "clear");
+  a_endline title;
+  match read_int (a_endline "Enter size of board: ") with
+  | x when x>0 -> x
+  | exception Failure s  -> 
+    (a_endline "Please enter integers above 0 only. ";
+     ignore (read_line (a_endline "Enter to continue.")); get_size ())
+  | _ -> 
+    (a_endline "Please enter integers above 0 only. ";
+     ignore (read_line (a_endline "Enter to continue.")); get_size ())
 
 let engine () =
-  start ()
-  |> turn
+  ignore (Sys.command "clear");
+  let size = get_size () in
+  let p1 = create_player size ship_list
+  and p2 = switch (); create_player size ship_list in
+  turn (p1, p2)
 
 let main = engine ()
 

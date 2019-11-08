@@ -33,7 +33,7 @@ bisect: clean bisect-test
 	bisect-ppx-report -I _build -html report bisect0001.out
 
 zip:
-	zip bs_src.zip *.ml* _tags Makefile 
+	zip bs_src.zip *.ml* _tags Makefile Install.md bs.txt
 	
 docs: docs-public docs-private
 	

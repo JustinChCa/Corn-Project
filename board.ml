@@ -10,7 +10,7 @@ module type Board = sig
   val columns: t -> int
   val rows: t -> int
   val taken : t -> (int * int) list -> (int * int) list
-  val place_ship: t -> ShipMaker.t -> unit
+  val place_ship: t -> ShipMaker.t -> ShipMaker.t
 end
 
 exception Missed of string
@@ -24,8 +24,8 @@ module BoardMaker = struct
     Array.make_matrix x y (Water None)
 
   let hit board (x, y) = 
-    match board.(x).(y) with
-    | Water (None) -> print_endline "You missed"; board.(x).(y) <- Miss
+    match board.(y).(x) with
+    | Water (None) -> print_endline "You missed"; board.(y).(x) <- Miss
     | Miss -> raise (Missed ("You have already missed this spot."))
     | Water (Some j) -> ShipMaker.hit (x, y) j
 
@@ -60,13 +60,13 @@ module BoardMaker = struct
 
   let rec taken board = function
     | [] -> []
-    | (x,y)::t -> match board.(x).(y) with 
+    | (x,y)::t -> match board.(y).(x) with 
       | Water (None) -> (x,y)::taken board t
       | Water (Some j) -> raise (Taken "Ship is overlapping with another.")
       | Miss -> failwith "Miss shouldn't exist yet."
 
   let place_ship board ship = 
-    List.iter (fun (x,y) -> board.(x).(y) <- Water (Some ship)) 
-      (ShipMaker.coordinates ship)
+    List.iter (fun (x,y) -> board.(y).(x) <- Water (Some ship)) 
+      (ShipMaker.coordinates ship); ship
 end
 
