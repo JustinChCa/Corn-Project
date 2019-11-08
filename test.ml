@@ -13,7 +13,10 @@ let ship_destroyer = Ship.create [(1,1);(1,2);(1,3)]
 let ship_sub = Ship.create [(2,1);(3,1)]
 let player = Player.create [ship_destroyer; ship_sub] board "player 1"
 
+
+
 open Ship
+
 
 let ship_attack_test name coordinate ship =  
   hit coordinate ship;
@@ -41,7 +44,35 @@ let ship_tests = [
                 assert_equal false  (calive (1,3) ship_destroyer);
                 assert_equal false  (alive ship_destroyer));]
 
-let board_tests = []
+    hit board (1,1);
+  assert_equal false  (calive (1,1) ship_destroyer_a); 
+  assert_equal true (alive ship_destroyer_a);
+  assert_equal true (Player.is_alive player_a);
+
+  hit board (1,2) ; 
+  assert_equal false  (calive (1,2) ship_destroyer_a);
+  assert_equal true  (alive ship_destroyer_a);
+
+  hit board (1,3) ; 
+  assert_equal false  (calive (1,3) ship_destroyer_a);
+
+  assert_equal false  (calive (1,1) ship_destroyer_a);
+  assert_equal false  (calive (1,3) ship_destroyer_a);
+  assert_equal false  (alive ship_destroyer_a);
+  assert_equal true (Player.is_alive player_a);
+
+  hit board (2,1) ;
+  assert_equal false (calive (2,1) ship_sub_a);
+  assert_equal true (alive ship_sub_a);
+  assert_equal true (Player.is_alive player_a);
+  hit board (3,1) ;
+  assert_equal false (calive (2,1) ship_sub_a);
+  assert_equal false (calive (3,1) ship_sub_a);
+  assert_equal false (alive ship_sub_a);
+  assert_equal false (Player.is_alive player_a)    )
+
+
+]
 
 let command_tests = []
 
