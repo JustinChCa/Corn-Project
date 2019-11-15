@@ -32,8 +32,8 @@ module type ai = sig
       for the unsunken ship until it is sunk.*)
   val smart_hit: BoardMaker.t -> (int*int) list -> (int*int) list-> unit
 
-  (** [hax_hit] uses the same ai as the hard difficulty but it is able to 
-      magically find an enemy ship coordinate with 100% certainty every 7 turns. *)
+  (** [hax_hit] uses the same ai as the hard difficulty but every 7 turns it
+      gets lucky and hits an enemy ship with 100% reliability. *)
   val hax_hit: BoardMaker.t -> (int*int) list -> (int*int) list-> unit
 end
 
