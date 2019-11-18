@@ -34,6 +34,11 @@ module MakeServer = struct
           ic = in_channel_of_descr s;
           oc = out_channel_of_descr s 
         };
+
+      (if !counter = 0 then
+         begin    
+           output_string players.(!counter).oc "lobby-1\n"; flush players.(!counter).oc end 
+       else output_string players.(!counter).oc "lobby-2\n"; flush players.(!counter).oc);
       counter := !counter +1;
     done
 
@@ -54,7 +59,7 @@ module MakeServer = struct
     output_string enemy_oc (command^"\n"); flush enemy_oc 
 
 
-  let game_service () =
+  let game_service socc =
     try while true do
         Array.iter (fun x -> 
             print_endline ("player " ^string_of_int x.player ^"'s turn");
@@ -64,7 +69,7 @@ module MakeServer = struct
       done
     with e -> let msg = Printexc.to_string e
       and stack = Printexc.get_backtrace () in
-      Printf.eprintf "there was an error: %s%s\n" msg stack; ; exit 0 ;;
+      Printf.eprintf "there was an error: %s%s\n" msg stack; exit 0 ;;
 
 
 
@@ -93,10 +98,12 @@ module MakeServer = struct
     try
       bind socket_addr (ADDR_INET(get_serv_address,port_number));
       listen socket_addr 5;
+      print_endline "Server running...";
       establish_connections socket_addr;  
+      print_endline "Battleship Game Started...";
       while true do 
 
-        game_service ();
+        game_service socket_addr;
         print_endline "server closing...";
 
         close socket_addr;

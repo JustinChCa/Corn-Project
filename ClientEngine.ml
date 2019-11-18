@@ -59,6 +59,7 @@ let rec hit player enemy print arg=
   try 
     let _ = print_boards () in 
     let rdln = if print = true then input_line Pervasives.stdin else arg in
+    ignore (Sys.command "clear");
 
     PlayerMaker.hit enemy (Command.find_coords rdln); rdln with
   | BadCoord s 
@@ -77,7 +78,7 @@ let hit_handler_outbound player enemy oc =
       ignore (Sys.command "clear");
       output_string oc ("winner " ^PlayerMaker.get_name player ^"\n") ;
       flush oc ; 
-      print_endline (PlayerMaker.get_name player ^ " wins.");
+      print_endline ("You win!");
     end 
   else
     output_string oc ("attacked " ^ coord ^"\n") ;
@@ -88,6 +89,7 @@ let hit_handler_inbound player enemy arg =
 
 
 let rec create_ship f name board ic oc=
+  ignore (Sys.command "clear");
   print_endline ("Place " ^ name);
   print_board (board);
   print_endline "Enter Coordinate and Orientation";
@@ -142,7 +144,6 @@ let create_enemy_player size ships args =
   let name ="enemy" in 
   let board = BoardMaker.create size size in 
   let ships = place_enemy_ships board ships args in
-  print_board board;
   PlayerMaker.create ships board name
 
 
@@ -156,7 +157,8 @@ let create_player size ships ic oc=
   print_board board;
   output_string oc ("create-enemy "^args^"\n") ;
   flush oc ;
-  a_endline "This is your board, press enter to continue.";
+  ignore (Sys.command "clear");
+  print_endline "Waiting on Player 2...";
   PlayerMaker.create real_ships board name
 
 let rec get_size () = 
@@ -173,9 +175,13 @@ let rec get_size () =
 
 
 
-
-
-
+let lobby t = 
+  ignore (Sys.command "clear");
+  a_endline title; 
+  if t= true then 
+    print_endline "Please wait while others are joining..."
+  else 
+    print_endline "Please wait while the other player finishes setting up their board..."
 
 
 

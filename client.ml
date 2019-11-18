@@ -48,7 +48,9 @@ module Client = struct
     | "initialize" -> myself := ClientEngine.create_player 10 ClientEngine.ship_list ic oc 
     | "attack" -> hit_handler_outbound !myself !enemy oc
     | "attacked" -> hit_handler_inbound !myself !enemy (String.split_on_char ' ' r |> List.tl |> List.hd )
-    | "winner" -> print_endline "you lost";
+    | "winner" -> print_endline "you lost"; failwith "game over";
+    | "lobby-1" -> lobby true;
+    | "lobby-2" -> lobby false;
     | "create-enemy" -> 
       let args = String.split_on_char ' ' r |> List.tl in 
       enemy := ClientEngine.create_enemy_player 10 ClientEngine.ship_list args
