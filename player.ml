@@ -5,6 +5,8 @@ open Board
 module type Player = sig 
   type t 
 
+  val empty: t
+
   val create : ShipMaker.t list -> BoardMaker.t -> string -> t
 
   val get_name: t -> string
@@ -29,6 +31,13 @@ module PlayerMaker = struct
     board= board;
     name= name;
   }
+
+  let empty= 
+    {
+      ships=[ShipMaker.create [(1,1)]];
+      board= BoardMaker.create 1 1;
+      name="dummy";
+    }
 
   let alive player =
     List.exists (fun a -> ShipMaker.alive a) player.ships

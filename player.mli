@@ -4,6 +4,10 @@ open Board
 module type Player = sig 
   type t 
 
+
+  (**[empty] is an empty player for the purposes of utilization by the
+     Client Engne. *)
+  val empty: t
   (**[init_player ships board name] is a Player with a board [board], 
      ships [ships], and with a name [name] *)
   val create : ShipMaker.t list -> BoardMaker.t -> string -> t

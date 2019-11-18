@@ -1,4 +1,4 @@
-MODULES=ship board authors command player main
+MODULES=ship board authors command player main client ClientEngine server
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)

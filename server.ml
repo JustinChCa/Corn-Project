@@ -1,45 +1,105 @@
 open Unix
+open Main
+open Command
 
 type request = unit
 
 type response = unit
 
+type player = {
+  player: int;
+  ic: in_channel;
+  oc: out_channel;
+}
+
+type state = | Initialize | Attack | Result
+
 module MakeServer = struct 
+
+  let counter = ref 0
+  let players = Array.make 2 {player=10; ic=Pervasives.stdin;oc=Pervasives.stdout}
+  let current_state = ref Initialize
 
   let port_number = 1400
 
-  let check_connections () = 
-    failwith "unimplemented"
+  let establish_connections sock_addr = 
+    while !counter <> 2 do 
+      let (s, _) = Unix.accept sock_addr in
+      (**REMOVE AFTER!!!!! *)
+      print_endline "socket accepted";
+      print_endline ((string_of_int (!counter+1)) ^ " players connected");
+      players.(!counter) <-
+        {
+          player= !counter;
+          ic = in_channel_of_descr s;
+          oc = out_channel_of_descr s 
+        };
+      counter := !counter +1;
+    done
 
-  let test_uppercase_service ic oc =
-    try while true do    
-        let s = input_line ic in 
-        let r = String.uppercase s 
-        in output_string oc (r^"\n") ; flush oc
+  let parse_win output = 
+    failwith "dne"
+
+  let issue_command () =
+    match !current_state with 
+    | Initialize -> "initialize "
+    | Attack -> "attack "
+    | Result -> "winner "
+
+  let control_state id ic oc=
+    output_string oc (issue_command ()^"\n"); flush oc;
+    let command = input_line ic in 
+    if String.trim command = "quit" then failwith "quit";
+    let enemy_oc = if id = 0 then players.(1).oc else players.(0).oc in 
+    output_string enemy_oc (command^"\n"); flush enemy_oc 
+
+
+  let game_service () =
+    try while true do
+        Array.iter (fun x -> 
+            print_endline ("player " ^string_of_int x.player ^"'s turn");
+            control_state x.player x.ic x.oc) players;
+
+        current_state := Attack
       done
-    with _ -> Printf.printf "End of text\n" ; flush oc ; exit 0 ;;
+    with e -> let msg = Printexc.to_string e
+      and stack = Printexc.get_backtrace () in
+      Printf.eprintf "there was an error: %s%s\n" msg stack; ; exit 0 ;;
+
+
+
+  let test_service ()=
+    try while true do
+        Array.iter (fun x -> 
+            print_endline (string_of_int x.player);
+            let s = input_line x.ic in 
+            let r = String.uppercase_ascii s in 
+            output_string x.oc (r^"\n"); flush x.oc) players
+
+
+      done
+    with e -> let msg = Printexc.to_string e
+      and stack = Printexc.get_backtrace () in
+      Printf.eprintf "there was an error: %s%s\n" msg stack; ; exit 0 ;;
 
   let run_server () = 
     let get_serv_address = 
       match Unix.gethostname () |> Unix.gethostbyname with
-      | k -> k.h_addr_list.(0) 
+      (* | k -> k.h_addr_list.(0)  *)
+      | k -> inet_addr_of_string "127.0.0.1"
       | exception Not_found -> failwith "Failure to start server."
     in 
-    let socket_addr = socket PF_INET SOCK_STREAM 0 in
+    let socket_addr = socket (Unix.domain_of_sockaddr (ADDR_INET(get_serv_address,port_number))) SOCK_STREAM 0 in
     try
       bind socket_addr (ADDR_INET(get_serv_address,port_number));
       listen socket_addr 5;
+      establish_connections socket_addr;  
       while true do 
-        let (s, caller) = Unix.accept socket_addr 
-        in match Unix.fork() with
-          0 -> if Unix.fork() <> 0 then exit 0 ; 
-          let inchan = Unix.in_channel_of_descr s 
-          and outchan = Unix.out_channel_of_descr s 
-          in test_uppercase_service inchan outchan ;
-          close_in inchan ;
-          close_out outchan ;
-          exit 0
-        | id -> Unix.close s; ignore(Unix.waitpid [] id)
+
+        game_service ();
+        print_endline "server closing...";
+
+        close socket_addr;
 
       done;
     with exc -> close socket_addr; raise exc
@@ -47,7 +107,7 @@ module MakeServer = struct
 
 
 
-  let close_connection socc = 
+  let close_connection socc= 
     close socc
 
   let game_service socc state = 

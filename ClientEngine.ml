@@ -1,0 +1,184 @@
+open Player
+open Command
+open Ship
+open Board
+
+let style = [ANSITerminal.white;]
+let a_endline s = ANSITerminal.print_string style (s ^ "\n")
+
+let read_txt txt = 
+  let rec t_help txt = 
+    match input_line txt with
+    | s -> s ^ "\n" ^ t_help txt
+    | exception End_of_file -> close_in txt; "\n" in
+  t_help txt
+
+let title = read_txt (open_in "bs.txt")
+
+let normal_ship (x, y) = function
+  | false -> [(x, y); (x+1, y); (x+2,y)]
+  | true -> [(x, y); (x, y+1); (x,y+2)]
+
+let l_ship (x,y) = function
+  | false -> [(x, y); (x+1, y); (x+2,y); (x+2, y+1)]
+  | true -> [(x, y); (x, y+1); (x,y+2); (x+1, y+2)]
+
+let dot (x,y) = function
+  | false -> [(x,y); (x+1, y)]
+  | true -> [(x,y); (x, y+1)]
+
+let ship_list = [(dot, "2 length ship"); (normal_ship, "3 length ship"); 
+                 (l_ship, "L ship")]
+
+let rec combine l1 l2 =
+  match l1, l2 with
+  | [], [] -> []
+  | h::t, s::x -> (h ^ "          " ^ s)::combine t x
+  | _, _ -> failwith "boards of different sizes"
+
+let print_board b =
+  BoardMaker.str_board b true 
+  |> List.iter (fun x -> a_endline x)
+
+let print_double b1 b2 =
+  combine (BoardMaker.str_board b1 true) (BoardMaker.str_board b2 false)
+  |> List.iter (fun x -> a_endline x)
+
+let rec hit player enemy print arg= 
+  let print_boards () = 
+    if print = true then
+      begin
+        ignore (Sys.command "clear");
+        print_double (PlayerMaker.get_board player) (PlayerMaker.get_board enemy); 
+        print_endline (PlayerMaker.get_name player ^ 
+                       "Your Turn.\nEnter target coordinates"); 
+      end 
+    else () 
+  in 
+
+  try 
+    let _ = print_boards () in 
+    let rdln = if print = true then input_line Pervasives.stdin else arg in
+
+    PlayerMaker.hit enemy (Command.find_coords rdln); rdln with
+  | BadCoord s 
+  | Missed s
+  | Hitted s -> 
+    ignore (read_line (print_endline (s ^ "\nPress Enter to try again.")));
+    hit player enemy print arg
+
+
+let hit_handler_outbound player enemy oc =
+  let coord = hit player enemy true "N/A" in
+  print_double (PlayerMaker.get_board player) (PlayerMaker.get_board enemy); 
+  print_endline "Enemy Player's Turn. Please wait...."; 
+  if not (PlayerMaker.alive enemy) then
+    begin
+      ignore (Sys.command "clear");
+      output_string oc ("winner " ^PlayerMaker.get_name player ^"\n") ;
+      flush oc ; 
+      print_endline (PlayerMaker.get_name player ^ " wins.");
+    end 
+  else
+    output_string oc ("attacked " ^ coord ^"\n") ;
+  flush oc ; ()
+
+let hit_handler_inbound player enemy arg =
+  ignore (hit enemy player false arg); ()
+
+
+let rec create_ship f name board ic oc=
+  print_endline ("Place " ^ name);
+  print_board (board);
+  print_endline "Enter Coordinate and Orientation";
+  let rdln = input_line Pervasives.stdin in 
+  let lst = String.split_on_char ' ' rdln in 
+  try 
+    let ship_constructed = (f (Command.find_coords (List.hd lst)) 
+                              (Command.orientation (List.hd (List.tl lst)))
+                            |> BoardMaker.taken board
+                            |> ShipMaker.create 
+                            |> BoardMaker.place_ship board 
+                           ) in
+
+
+    ship_constructed,rdln
+
+  with
+  | BadCoord s 
+  | Invalid_argument s  
+  | Taken s -> 
+    ignore (read_line (a_endline (s ^ "\nPress Enter to try again.")));
+    create_ship f name board ic oc
+
+
+let rec place_ships board ships ic oc=
+  match ships with 
+  | [] -> []
+  | (f, name)::t ->
+
+
+    create_ship f name board ic oc:: place_ships board t ic oc 
+
+let rec create_enemy_ship f name board coord orient=
+  let ship_constructed = (f (Command.find_coords coord) 
+                            (Command.orientation orient)
+                          |> BoardMaker.taken board
+                          |> ShipMaker.create 
+                          |> BoardMaker.place_ship board 
+                         ) in
+
+
+  ship_constructed
+
+
+let rec place_enemy_ships board ships args =
+  match ships, args with 
+  | [],_ -> []
+  | (f,name)::t, h::j::k -> create_enemy_ship f name board h j::place_enemy_ships board t k
+  | _ -> failwith "Env "
+
+let create_enemy_player size ships args = 
+  let name ="enemy" in 
+  let board = BoardMaker.create size size in 
+  let ships = place_enemy_ships board ships args in
+  print_board board;
+  PlayerMaker.create ships board name
+
+
+let create_player size ships ic oc= 
+  let name = "p1" in
+  let board = BoardMaker.create size size in
+  let ships_tups = place_ships board ships ic oc in 
+  let args = List.fold_left (fun accum x -> match x with | (h,t) -> accum ^ t ^" ") "" ships_tups in 
+  let real_ships = List.fold_left (fun accum x -> match x with | (h,t) -> h::accum) [] ships_tups in 
+  ignore (Sys.command "clear");
+  print_board board;
+  output_string oc ("create-enemy "^args^"\n") ;
+  flush oc ;
+  a_endline "This is your board, press enter to continue.";
+  PlayerMaker.create real_ships board name
+
+let rec get_size () = 
+  ignore (Sys.command "clear");
+  a_endline title;
+  match read_int (a_endline "Enter size of board: ") with
+  | x when x>0 -> x
+  | exception Failure s  -> 
+    (a_endline "Please enter integers above 0 only. ";
+     ignore (read_line (a_endline "Enter to continue.")); get_size ())
+  | _ -> 
+    (a_endline "Please enter integers above 0 only. ";
+     ignore (read_line (a_endline "Enter to continue.")); get_size ())
+
+
+
+
+
+
+
+
+
+
+
+
