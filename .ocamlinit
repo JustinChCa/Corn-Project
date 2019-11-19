@@ -7,3 +7,8 @@
 #load_rec "ship.cmo";;
 #load_rec "player.cmo";;
 #load_rec "main.cmo";;
+#load_rec "ClientEngine.cmo";;
+#load_rec "client.cmo";;
+#load_rec "server.cmo";;
+
+
