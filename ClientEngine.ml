@@ -16,16 +16,16 @@ let read_txt txt =
 let title = read_txt (open_in "bs.txt")
 
 let normal_ship (x, y) = function
-  | false -> [(x, y); (x+1, y); (x+2,y)]
-  | true -> [(x, y); (x, y+1); (x,y+2)]
+  | true -> [(x, y); (x+1, y); (x+2,y)]
+  | false -> [(x, y); (x, y+1); (x,y+2)]
 
 let l_ship (x,y) = function
-  | false -> [(x, y); (x+1, y); (x+2,y); (x+2, y+1)]
-  | true -> [(x, y); (x, y+1); (x,y+2); (x+1, y+2)]
+  | true -> [(x, y); (x+1, y); (x+2,y); (x+2, y+1)]
+  | false -> [(x, y); (x, y+1); (x,y+2); (x+1, y+2)]
 
 let dot (x,y) = function
-  | false -> [(x,y); (x+1, y)]
-  | true -> [(x,y); (x, y+1)]
+  | true -> [(x,y); (x+1, y)]
+  | false -> [(x,y); (x, y+1)]
 
 let ship_list = [(dot, "2 length ship"); (normal_ship, "3 length ship"); 
                  (l_ship, "L ship")]
@@ -64,8 +64,9 @@ let rec hit_controller player enemy print arg=
 
       match PlayerMaker.hit enemy (Command.find_coords rdln) with 
       | () -> rdln
-      | exception t ->
-        print_endline "Try again..."; hit_controller player enemy print arg
+      | exception  t ->
+        ignore (read_line (print_endline ("Already hit the coordinate or Bad Coordinate" ^ "\nPress Enter to try again.")));
+        hit_controller player enemy print arg
     end 
   with
   | BadCoord s 
@@ -183,8 +184,10 @@ let rec get_size () =
 
 
 let lobby t = 
+  let disconnect_msg = "If you wish to quit the game, please do 'control-c'" in 
   ignore (Sys.command "clear");
   a_endline title; 
+  print_endline disconnect_msg;
   if t= true then 
     print_endline "Please wait while others are joining..."
   else 

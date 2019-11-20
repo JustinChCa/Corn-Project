@@ -54,18 +54,15 @@ module Server = struct
 
 
   let game_service socc =
-    try while true do
+    while true do
 
-        print_endline ("player " ^string_of_int players.(0).player ^"'s turn");
-        control_state players.(0).player players.(0).ic players.(0).oc;
-        print_endline ("player " ^string_of_int players.(1).player ^"'s turn");
-        control_state players.(1).player players.(1).ic players.(1).oc;
+      print_endline ("player " ^string_of_int players.(0).player ^"'s turn");
+      control_state players.(0).player players.(0).ic players.(0).oc;
+      print_endline ("player " ^string_of_int players.(1).player ^"'s turn");
+      control_state players.(1).player players.(1).ic players.(1).oc;
 
-        current_state := Attack
-      done
-    with e -> let msg = Printexc.to_string e
-      and stack = Printexc.get_backtrace () in
-      Printf.eprintf "there was an error: %s%s\n" msg stack; exit 0 ;;
+      current_state := Attack
+    done
 
 
   let configure_server () = 
@@ -75,8 +72,8 @@ module Server = struct
     let port_number = 8080 in
     let get_serv_address = 
       match Unix.gethostname () |> Unix.gethostbyname with
-      (* | k -> k.h_addr_list.(0)  *)
-      | k -> inet_addr_of_string "127.0.0.1"
+      | k -> k.h_addr_list.(0) 
+      (* | k -> inet_addr_of_string "127.0.0.1" *)
       | exception Not_found -> failwith "Failure to start server; Could not find localhost"
     in 
     let socket_addr = socket (Unix.domain_of_sockaddr (ADDR_INET(get_serv_address,port_number))) SOCK_STREAM 0 in
@@ -98,8 +95,11 @@ module Server = struct
         close socket_addr;
 
       done;
-    with exc -> close socket_addr; 
-      print_endline "The server has shutdown"; raise exc
+    with exc -> 
+      shutdown socket_addr SHUTDOWN_ALL;
+      close socket_addr; 
+      print_endline "The server has shutdown; Please wait some time before starting the server back up again.
+      Deallocating the sockets may take some time... (~1-2 mins max.)"; exit 0
 
   let close_connection socc= 
     close socc

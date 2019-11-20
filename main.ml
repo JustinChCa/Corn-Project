@@ -120,7 +120,7 @@ let main () =
   and p2 = switch (); create_player size ship_list in
   turn (p1, p2)
 
-(* let () = main () *)
+let () = main () 
 
 
 

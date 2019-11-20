@@ -26,12 +26,12 @@ module Client = struct
         match create_socket_connection ip t with 
         | k -> k
         | exception Failure k ->
-          print_endline "No connection. try again.\n"; prompt_connection ()
+          print_endline "Could not create connection. Host might not exist. try again.\n"; prompt_connection ()
 
       end
 
     | exception Failure j -> 
-      print_endline "Bad port. Please Re-type\n";
+      print_endline "Bad port; must be a number. Please Re-type\n";
       prompt_connection ()
 
 
@@ -62,14 +62,18 @@ module Client = struct
     with 
       Exit -> exit 0
     | exn -> shutdown_connection ic; 
-      print_endline "The sever has shutdown; you have disconnected.";
+      print_endline "You have disconnected.";
       raise exn;;
 
-  let connect () =
-    let socket = prompt_connection () in
-    let (ic,oc) = open_connection socket in    
-    controller ic oc ;
-    shutdown_connection ic
+  let rec connect () =
+    try 
+      let socket = prompt_connection () in
+      let (ic,oc) = open_connection socket 
+      in    
+      controller ic oc ;
+      shutdown_connection ic
+    with 
+      exn -> print_endline "Connection Refused; try again"; connect ()
 
 
 end
