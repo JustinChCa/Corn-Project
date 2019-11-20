@@ -29,8 +29,8 @@ let find_coords line =
   match Str.search_forward chars line 0 with
   | t -> let x = Str.matched_string line in begin
       match Str.search_forward numbers line (Str.match_end ()) with
-      | t -> (int_of_string (Str.matched_string line) - 1, 
-              int_of_l x (String.length x) - 1)
+      | t -> (int_of_l x (String.length x) - 1,
+              int_of_string (Str.matched_string line) - 1)
       | exception Not_found -> raise (BadCoord error_bad_coord) end
   | exception Not_found -> raise (BadCoord error_bad_coord)
 
