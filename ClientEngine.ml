@@ -15,17 +15,19 @@ let read_txt txt =
 
 let title = read_txt (open_in "bs.txt")
 
+(* true is vertical and false is horizonta*)
+
 let normal_ship (x, y) = function
-  | false -> [(x, y); (x+1, y); (x+2,y)]
-  | true -> [(x, y); (x, y+1); (x,y+2)]
+  | true -> [(x, y); (x+1, y); (x+2,y)]
+  | false -> [(x, y); (x, y+1); (x,y+2)]
 
 let l_ship (x,y) = function
-  | false -> [(x, y); (x+1, y); (x+2,y); (x+2, y+1)]
-  | true -> [(x, y); (x, y+1); (x,y+2); (x+1, y+2)]
+  | true -> [(x, y); (x+1, y); (x+2,y); (x+2, y+1)]
+  | false -> [(x, y); (x, y+1); (x,y+2); (x+1, y+2)]
 
 let dot (x,y) = function
-  | false -> [(x,y); (x+1, y)]
-  | true -> [(x,y); (x, y+1)]
+  | true -> [(x,y); (x+1, y)]
+  | false -> [(x,y); (x, y+1)]
 
 let ship_list = [(dot, "2 length ship"); (normal_ship, "3 length ship"); 
                  (l_ship, "L ship")]
