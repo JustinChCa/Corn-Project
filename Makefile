@@ -5,12 +5,7 @@ MLIS=$(MODULES:=.mli)
 MAIN=main.byte
 TEST=test.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind -plugin-tag 'package(bisect_ppx-ocamlbuild)'
-<<<<<<< HEAD
 PKGS=unix,oUnit,str,ANSITerminal,graphics
-=======
-PKGS=unix,oUnit,str,ANSITerminal
-SERVER=server.byte
->>>>>>> 7075187ea1d9dd5d8a9f77d0dee7b6cd639412ca
 
 default: build
 	utop
