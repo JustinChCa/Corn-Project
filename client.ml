@@ -26,26 +26,22 @@ module Client = struct
         match create_socket_connection ip t with 
         | k -> k
         | exception Failure k ->
-          print_endline "no connection. try again.\n"; prompt_connection ()
+          print_endline "Could not create connection. Host might not exist. try again.\n"; prompt_connection ()
 
       end
 
     | exception Failure j -> 
-      print_endline "Bad port. Please Re-type\n";
+      print_endline "Bad port; must be a number. Please Re-type\n";
       prompt_connection ()
 
 
   let shutdown_connection inchan =
     Unix.shutdown (Unix.descr_of_in_channel inchan) Unix.SHUTDOWN_SEND 
 
-
-  let attack_handler command = 
-    failwith "dne"
-
   let step_update ic oc r=
     let parse_command = String.split_on_char ' ' r |> List.hd in 
     match parse_command with 
-    | "initialize" -> myself := ClientEngine.create_player 10 ClientEngine.ship_list ic oc 
+    | "initialize" -> myself := ClientEngine.create_client_player 10 ClientEngine.ship_list ic oc 
     | "attack" -> hit_handler_outbound !myself !enemy oc
     | "attacked" -> hit_handler_inbound !myself !enemy (String.split_on_char ' ' r |> List.tl |> List.hd )
     | "winner" -> print_endline "you lost"; failwith "game over";
@@ -65,42 +61,18 @@ module Client = struct
       done
     with 
       Exit -> exit 0
-    | exn -> shutdown_connection ic; raise exn;;
+    | exn -> shutdown_connection ic; 
+      print_endline "You have disconnected."; exit 0
 
-  let client_fun_test ic oc step= 
-    try
-      while true do  
-        print_string  "Request : " ;
-        flush Stdlib.stdout ;
-        output_string oc ((input_line Stdlib.stdin)^"\n") ;
-        flush oc ;
-
-      done
+  let rec connect () =
+    try 
+      let socket = prompt_connection () in
+      let (ic,oc) = open_connection socket 
+      in    
+      controller ic oc ;
+      shutdown_connection ic
     with 
-      Exit -> exit 0
-    | exn -> shutdown_connection ic ; raise exn  ;;
-
-  let connect () =
-    let socket = prompt_connection () in
-    let (ic,oc) = open_connection socket in    
-    controller ic oc ;
-    shutdown_connection ic
-
-  (* match Unix.fork() with
-     | 0 -> print_endline "in progress"
-     | _ ->  print_endline "in progress" *)
-
-
-
-
-  let disconnect socc =
-    failwith "unimplemented"
-
-
-  let update_to_server () =
-    failwith "unimplemented"
-
-
+      exn -> print_endline "Connection Refused; try again"; connect ()
 
 
 end

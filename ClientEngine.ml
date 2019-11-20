@@ -2,7 +2,6 @@ open Player
 open Command
 open Ship
 open Board
-(* open Main *)
 
 let style = [ANSITerminal.white;]
 let a_endline s = ANSITerminal.print_string style (s ^ "\n")
@@ -16,17 +15,19 @@ let read_txt txt =
 
 let title = read_txt (open_in "bs.txt")
 
+(* true is vertical and false is horizonta*)
+
 let normal_ship (x, y) = function
-  | false -> [(x, y); (x+1, y); (x+2,y)]
-  | true -> [(x, y); (x, y+1); (x,y+2)]
+  | true -> [(x, y); (x+1, y); (x+2,y)]
+  | false -> [(x, y); (x, y+1); (x,y+2)]
 
 let l_ship (x,y) = function
-  | false -> [(x, y); (x+1, y); (x+2,y); (x+2, y+1)]
-  | true -> [(x, y); (x, y+1); (x,y+2); (x+1, y+2)]
+  | true -> [(x, y); (x+1, y); (x+2,y); (x+2, y+1)]
+  | false -> [(x, y); (x, y+1); (x,y+2); (x+1, y+2)]
 
 let dot (x,y) = function
-  | false -> [(x,y); (x+1, y)]
-  | true -> [(x,y); (x, y+1)]
+  | true -> [(x,y); (x+1, y)]
+  | false -> [(x,y); (x, y+1)]
 
 let ship_list = [(dot, "2 length ship"); (normal_ship, "3 length ship"); 
                  (l_ship, "L ship")]
@@ -45,7 +46,7 @@ let print_double b1 b2 =
   combine (BoardMaker.str_board b1 true) (BoardMaker.str_board b2 false)
   |> List.iter (fun x -> a_endline x)
 
-let rec hit player enemy print arg= 
+let rec hit_controller player enemy print arg= 
   let print_boards () = 
     if print = true then
       begin
@@ -60,25 +61,25 @@ let rec hit player enemy print arg=
   try 
     begin
       let _ = print_boards () in 
-      let rdln = if print = true then input_line Pervasives.stdin else arg in
+      let rdln = if print = true then input_line Stdlib.stdin else arg in
       ignore (Sys.command "clear");
 
       match PlayerMaker.hit enemy (Command.find_coords rdln) with 
       | () -> rdln
-      | exception Hitted t 
-      | exception Missed t->
-        print_endline t; hit player enemy print arg
+      | exception  t ->
+        ignore (read_line (print_endline ("Already hit the coordinate or Bad Coordinate" ^ "\nPress Enter to try again.")));
+        hit_controller player enemy print arg
     end 
   with
   | BadCoord s 
   | Missed s
   | Hitted s -> 
     ignore (read_line (print_endline (s ^ "\nPress Enter to try again.")));
-    hit player enemy print arg
+    hit_controller player enemy print arg
 
 
 let hit_handler_outbound player enemy oc =
-  let coord = hit player enemy true "N/A" in
+  let coord = hit_controller player enemy true "N/A" in
   print_double (PlayerMaker.get_board player) (PlayerMaker.get_board enemy); 
   print_endline "Enemy Player's Turn. Please wait...."; 
   if not (PlayerMaker.alive enemy) then
@@ -93,15 +94,15 @@ let hit_handler_outbound player enemy oc =
   flush oc ; ()
 
 let hit_handler_inbound player enemy arg =
-  ignore (hit enemy player false arg); ()
+  ignore (hit_controller enemy player false arg); ()
 
 
-let rec create_ship f name board ic oc=
+let rec create_client_ship f name board ic oc=
   ignore (Sys.command "clear");
   print_endline ("Place " ^ name);
   print_board (board);
   print_endline "Enter Coordinate and Orientation";
-  let rdln = input_line Pervasives.stdin in 
+  let rdln = input_line Stdlib.stdin in 
   let lst = String.split_on_char ' ' rdln in 
   try 
     let ship_constructed = (f (Command.find_coords (List.hd lst)) 
@@ -119,18 +120,17 @@ let rec create_ship f name board ic oc=
   | Invalid_argument s  
   | Taken s -> 
     ignore (read_line (a_endline (s ^ "\nPress Enter to try again.")));
-    create_ship f name board ic oc
+    create_client_ship f name board ic oc
   | _ -> ignore (read_line (a_endline ("You are missing arguments." ^ "\nPress Enter to try again.")));
-    create_ship f name board ic oc
+    create_client_ship f name board ic oc
 
 
-let rec place_ships board ships ic oc=
+let rec place_client_ships board ships ic oc=
   match ships with 
   | [] -> []
   | (f, name)::t ->
 
-
-    create_ship f name board ic oc:: place_ships board t ic oc 
+    create_client_ship f name board ic oc:: place_client_ships board t ic oc 
 
 let rec create_enemy_ship f name board coord orient=
   let ship_constructed = (f (Command.find_coords coord) 
@@ -157,10 +157,10 @@ let create_enemy_player size ships args =
   PlayerMaker.create ships board name
 
 
-let create_player size ships ic oc= 
-  let name = "p1" in
+let create_client_player size ships ic oc= 
+  let name = " " in
   let board = BoardMaker.create size size in
-  let ships_tups = place_ships board ships ic oc in 
+  let ships_tups = place_client_ships board ships ic oc in 
   let args = List.fold_left (fun accum x -> match x with | (h,t) -> accum ^ t ^" ") "" ships_tups in 
   let real_ships = List.fold_left (fun accum x -> match x with | (h,t) -> h::accum) [] ships_tups in 
   ignore (Sys.command "clear");
@@ -186,8 +186,10 @@ let rec get_size () =
 
 
 let lobby t = 
+  let disconnect_msg = "If you wish to quit the game, please do 'control-c'" in 
   ignore (Sys.command "clear");
   a_endline title; 
+  print_endline disconnect_msg;
   if t= true then 
     print_endline "Please wait while others are joining..."
   else 

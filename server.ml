@@ -2,10 +2,6 @@ open Unix
 open Main
 open Command
 
-type request = unit
-
-type response = unit
-
 type player = {
   player: int;
   ic: in_channel;
@@ -14,30 +10,28 @@ type player = {
 
 type state = | Initialize | Attack | Result
 
-module MakeServer = struct 
+module Server = struct 
 
   let counter = ref 0
-  let players = Array.make 2 {player=10; ic=Pervasives.stdin;oc=Pervasives.stdout}
+  let players = Array.make 2 {player=10; ic=Stdlib.stdin;oc=Stdlib.stdout}
   let current_state = ref Initialize
-
-  let port_number = 1400
 
   let establish_connections sock_addr = 
     while !counter <> 2 do 
-      let (s, _) = Unix.accept sock_addr in
-      (**REMOVE AFTER!!!!! *)
-      print_endline "socket accepted";
-      print_endline ((string_of_int (!counter+1)) ^ " players connected");
+      let (socc, _) = Unix.accept sock_addr in
       players.(!counter) <-
         {
           player= !counter;
-          ic = in_channel_of_descr s;
-          oc = out_channel_of_descr s 
+          ic = in_channel_of_descr socc;
+          oc = out_channel_of_descr socc
         };
+      print_endline ((string_of_int (!counter+1)) ^ " players connected");
+
 
       (if !counter = 0 then
          begin    
-           output_string players.(!counter).oc "lobby-1\n"; flush players.(!counter).oc end 
+           output_string players.(!counter).oc "lobby-1\n"; flush players.(!counter).oc 
+         end 
        else output_string players.(!counter).oc "lobby-2\n"; flush players.(!counter).oc);
       counter := !counter +1;
     done
@@ -60,30 +54,37 @@ module MakeServer = struct
 
 
   let game_service socc =
-    try while true do
-        Array.iter (fun x -> 
-            print_endline ("player " ^string_of_int x.player ^"'s turn");
-            control_state x.player x.ic x.oc) players;
+    while true do
 
-        current_state := Attack
-      done
-    with e -> let msg = Printexc.to_string e
-      and stack = Printexc.get_backtrace () in
-      Printf.eprintf "there was an error: %s%s\n" msg stack; exit 0 ;;
+      print_endline ("player " ^string_of_int players.(0).player ^"'s turn");
+      control_state players.(0).player players.(0).ic players.(0).oc;
+      print_endline ("player " ^string_of_int players.(1).player ^"'s turn");
+      control_state players.(1).player players.(1).ic players.(1).oc;
 
+      current_state := Attack
+    done
+
+
+  let configure_server () = 
+    failwith "DNE"
 
   let run_server () = 
+    let port_number = 8080 in
     let get_serv_address = 
       match Unix.gethostname () |> Unix.gethostbyname with
-      (* | k -> k.h_addr_list.(0)  *)
-      | k -> inet_addr_of_string "127.0.0.1"
-      | exception Not_found -> failwith "Failure to start server."
+      | k -> k.h_addr_list.(0) 
+      (* | k -> inet_addr_of_string "127.0.0.1" *)
+      | exception Not_found -> failwith "Failure to start server; Could not find localhost"
     in 
     let socket_addr = socket (Unix.domain_of_sockaddr (ADDR_INET(get_serv_address,port_number))) SOCK_STREAM 0 in
     try
       bind socket_addr (ADDR_INET(get_serv_address,port_number));
-      listen socket_addr 5;
+      listen socket_addr 8;
       print_endline "Server running...";
+      print_endline "\n To end the server do 'control-c'";
+      print_endline ("\nYou're local ip address to connect to the server is:
+       "^(Unix.string_of_inet_addr get_serv_address));
+      print_endline ("\nYour server port is "^ (string_of_int port_number));
       establish_connections socket_addr;  
       print_endline "Battleship Game Started...";
       while true do 
@@ -94,15 +95,13 @@ module MakeServer = struct
         close socket_addr;
 
       done;
-    with exc -> close socket_addr; raise exc
-
-
-
+    with exc -> 
+      shutdown socket_addr SHUTDOWN_ALL;
+      close socket_addr; 
+      print_endline "The server has shutdown; Please wait some time before starting the server back up again.
+      Deallocating the sockets may take some time... (~1-2 mins max.)"; exit 0
 
   let close_connection socc= 
     close socc
-
-  let game_service socc state = 
-    failwith "unimplemented"
 
 end 
