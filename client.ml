@@ -62,8 +62,7 @@ module Client = struct
     with 
       Exit -> exit 0
     | exn -> shutdown_connection ic; 
-      print_endline "You have disconnected.";
-      raise exn;;
+      print_endline "You have disconnected."; exit 0
 
   let rec connect () =
     try 

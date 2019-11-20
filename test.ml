@@ -15,7 +15,6 @@ let ship_sub = Ship.create [(2,1);(3,1)]
 let player = Player.create [ship_destroyer; ship_sub] board "player 1"
 
 
-
 open Ship
 
 let ship_attack_test name coordinate ship =  
