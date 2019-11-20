@@ -6,6 +6,7 @@ MAIN=main.byte
 TEST=test.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind -plugin-tag 'package(bisect_ppx-ocamlbuild)'
 PKGS=unix,oUnit,str,ANSITerminal
+SERVER=server.byte
 
 default: build
 	utop
@@ -51,3 +52,8 @@ docs-private: build
 clean:
 	ocamlbuild -clean
 	rm -rf bs_src.zip
+
+server:
+	$(OCAMLBUILD) $(SERVER) && ./$(SERVER)
+
+
