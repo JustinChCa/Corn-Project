@@ -72,21 +72,6 @@ module MakeServer = struct
       Printf.eprintf "there was an error: %s%s\n" msg stack; exit 0 ;;
 
 
-
-  let test_service ()=
-    try while true do
-        Array.iter (fun x -> 
-            print_endline (string_of_int x.player);
-            let s = input_line x.ic in 
-            let r = String.uppercase_ascii s in 
-            output_string x.oc (r^"\n"); flush x.oc) players
-
-
-      done
-    with e -> let msg = Printexc.to_string e
-      and stack = Printexc.get_backtrace () in
-      Printf.eprintf "there was an error: %s%s\n" msg stack; ; exit 0 ;;
-
   let run_server () = 
     let get_serv_address = 
       match Unix.gethostname () |> Unix.gethostbyname with

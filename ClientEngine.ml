@@ -2,6 +2,7 @@ open Player
 open Command
 open Ship
 open Board
+(* open Main *)
 
 let style = [ANSITerminal.white;]
 let a_endline s = ANSITerminal.print_string style (s ^ "\n")
@@ -57,11 +58,18 @@ let rec hit player enemy print arg=
   in 
 
   try 
-    let _ = print_boards () in 
-    let rdln = if print = true then input_line Pervasives.stdin else arg in
-    ignore (Sys.command "clear");
+    begin
+      let _ = print_boards () in 
+      let rdln = if print = true then input_line Pervasives.stdin else arg in
+      ignore (Sys.command "clear");
 
-    PlayerMaker.hit enemy (Command.find_coords rdln); rdln with
+      match PlayerMaker.hit enemy (Command.find_coords rdln) with 
+      | () -> rdln
+      | exception Hitted t 
+      | exception Missed t->
+        print_endline t; hit player enemy print arg
+    end 
+  with
   | BadCoord s 
   | Missed s
   | Hitted s -> 
@@ -111,6 +119,8 @@ let rec create_ship f name board ic oc=
   | Invalid_argument s  
   | Taken s -> 
     ignore (read_line (a_endline (s ^ "\nPress Enter to try again.")));
+    create_ship f name board ic oc
+  | _ -> ignore (read_line (a_endline ("You are missing arguments." ^ "\nPress Enter to try again.")));
     create_ship f name board ic oc
 
 

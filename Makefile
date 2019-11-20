@@ -51,3 +51,8 @@ docs-private: build
 clean:
 	ocamlbuild -clean
 	rm -rf bs_src.zip
+
+server:
+	$(OCAMLBUILD) $(SERVER) && ./$(SERVER)
+
+
