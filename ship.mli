@@ -29,6 +29,10 @@ module type Ship = sig
 
   (** [coordinates s] is the list of coordinates of [s]. *)
   val coordinates : t -> coor list
+
+  (** [health ship] is the number of alive coordinates left in the ship [ship]*)
+  val health: t -> int
+
 end
 
 module ShipMaker : Ship with type t = (coor * bool) list ref
