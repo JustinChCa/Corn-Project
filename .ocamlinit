@@ -2,6 +2,7 @@
 #require "str";;
 #require "ANSITerminal";;
 #require "OUnit2";;
+#require "graphics";;
 #load_rec "board.cmo";;
 #load_rec "command.cmo";;
 #load_rec "ship.cmo";;

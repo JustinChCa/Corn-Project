@@ -23,11 +23,11 @@ module BoardMaker = struct
   let create x y = 
     Array.make_matrix x y (Water None)
 
-  let hit board (x, y) = 
+  let hit board (y, x) = 
     match board.(y).(x) with
     | Water (None) -> print_endline "You missed"; board.(y).(x) <- Miss
     | Miss -> raise (Missed ("You have already missed this spot."))
-    | Water (Some j) -> ShipMaker.hit (x, y) j
+    | Water (Some j) -> ShipMaker.hit (y, x) j
 
   let rec fold f arr i acc =
     match arr.(i) with
@@ -48,7 +48,7 @@ module BoardMaker = struct
 
   (** [str_row self row y] is the [string] of [row]*)
   let str_row self row y =
-    (fold (fun x s acc -> acc ^ opt_to_str self (x, y) s) row 0 "") ^ "|"
+    (fold (fun x s acc -> acc ^ opt_to_str self (y, x) s) row 0 "") ^ "|"
 
   let str_board board self=
     let part = h_partition "-" (Array.length board) in
@@ -60,13 +60,13 @@ module BoardMaker = struct
 
   let rec taken board = function
     | [] -> []
-    | (x,y)::t -> match board.(y).(x) with 
-      | Water (None) -> (x,y)::taken board t
+    | (y,x)::t -> match board.(y).(x) with 
+      | Water (None) -> (y,x)::taken board t
       | Water (Some j) -> raise (Taken "Ship is overlapping with another.")
       | Miss -> failwith "Miss shouldn't exist yet."
 
   let place_ship board ship = 
-    List.iter (fun (x,y) -> board.(y).(x) <- Water (Some ship)) 
+    List.iter (fun (y,x) -> board.(y).(x) <- Water (Some ship)) 
       (ShipMaker.coordinates ship); ship
 end
 

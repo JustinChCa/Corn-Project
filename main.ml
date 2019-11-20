@@ -113,14 +113,14 @@ let rec get_size () =
     (a_endline "Please enter integers above 0 only. ";
      ignore (read_line (a_endline "Enter to continue.")); get_size ())
 
-let engine () =
+let main () =
   ignore (Sys.command "clear");
   let size = get_size () in
   let p1 = create_player size ship_list
   and p2 = switch (); create_player size ship_list in
   turn (p1, p2)
 
-let main = engine ()
+let () = main ()
 
 
 
