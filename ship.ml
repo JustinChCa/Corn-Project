@@ -9,6 +9,7 @@ module type Ship = sig
   val calive : coor -> t -> bool
   val alive : t -> bool
   val coordinates : t -> coor list
+  val health: t -> int
 end
 
 exception Hitted of string
@@ -47,5 +48,16 @@ module ShipMaker = struct
 
   let coordinates ship =
     List.map (fun ((x,y), b) -> (x,y)) !ship
+
+  let rec health ship = 
+    let rec health_helper lst acc =
+      match lst with
+      |[] -> acc
+      |(_,b) :: t -> if b = true then
+          health_helper t (acc+1) else
+          health_helper t acc
+    in 
+    health_helper !ship 0
+
 end
 

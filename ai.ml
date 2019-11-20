@@ -6,7 +6,7 @@ open Ship
 module type Ai = sig
   type t
   val dumb_hit: BoardMaker.t -> (int*int) list -> (int*int) list -> unit
-  val easy_hit: BoardMaker.t -> (int*int) list -> (int*int) list-> unit
+  val normal_hit: BoardMaker.t -> (int*int) list -> (int*int) list-> unit
   val smart_hit: BoardMaker.t -> (int*int) list -> (int*int) list-> unit
   val hax_hit: BoardMaker.t -> (int*int) list -> (int*int) list-> unit
 end
@@ -80,12 +80,11 @@ module AiMaker = struct
     match ai with
     |{diff = d; missed = miss; current = curr; avail = aval; b = board} -> 
       let coornewlst = find_coor_r aval in
-      failwith "unimplemented"
-  (* avail <- snd coornewlst 
-     then deal with where fst coornewlst goes
-     BoardMaker.hit board (fst coornewlst)*)
+      ai.avail <- snd coornewlst;
+      ai.missed <- (fst coornewlst)::miss;
+      BoardMaker.hit board (fst coornewlst)
 
-  let easy_hit ai =
+  let normal_hit ai =
     failwith "unimplemented"
 
   let smart_hit ai =

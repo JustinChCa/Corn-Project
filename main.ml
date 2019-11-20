@@ -19,6 +19,8 @@ let switch () =
   ignore (Sys.command "clear"); 
   ignore (read_line (a_endline "Please switch and hit return."))
 
+(* true is vertical and false is horizonta*)
+
 let normal_ship (x, y) = function
   | true -> [(x, y); (x+1, y); (x+2,y)]
   | false -> [(x, y); (x, y+1); (x,y+2)]

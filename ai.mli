@@ -26,7 +26,7 @@ module type ai = sig
   (** [easy_hit b miss hit] hits a random spot if there is no other spot that 
       has been hit but the ship there is not yet sunk, e.g. the lst [hit] is 
       nonempty. This continues to search for the unsunken ship until it is sunk. *)
-  val easy_hit: t -> unit
+  val normal_hit: t -> unit
 
   (** [smart_hit b miss hit] uses a checkerboard and space checking strategy to 
       attack spots if there is no other spot that has been hit but the ship there
