@@ -80,10 +80,12 @@ module AiMaker = struct
     match ai with
     |{diff = d; missed = miss; current = curr; avail = aval; b = board} -> 
       let coornewlst = find_coor_r aval in
-      failwith "unimplemented"
-  (* avail <- snd coornewlst 
-     then deal with where fst coornewlst goes
-     BoardMaker.hit board (fst coornewlst)*)
+      ai.avail <- snd coornewlst
+
+
+
+
+          BoardMaker.hit board (fst coornewlst)
 
   let easy_hit ai =
     failwith "unimplemented"
