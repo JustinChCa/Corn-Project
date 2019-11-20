@@ -45,6 +45,9 @@ module type Board = sig
   (** [place_ship board ship] puts [ship] into the [board].*)
   val place_ship : t -> ShipMaker.t -> ShipMaker.t
 
+  (** [get_coor board (r,c)] is the ship option of the coordinate [(r,c)] of
+      the board. *)
+  val get_coor: t -> int * int -> ShipMaker.t option
 
 end
 

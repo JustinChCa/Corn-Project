@@ -11,6 +11,7 @@ module type Board = sig
   val rows: t -> int
   val taken : t -> (int * int) list -> (int * int) list
   val place_ship: t -> ShipMaker.t -> ShipMaker.t
+  val get_coor: t -> int * int -> ShipMaker.t option
 end
 
 exception Missed of string
@@ -68,5 +69,12 @@ module BoardMaker = struct
   let place_ship board ship = 
     List.iter (fun (x,y) -> board.(y).(x) <- Water (Some ship)) 
       (ShipMaker.coordinates ship); ship
+
+  let get_coor board (r, c) : ShipMaker.t option = 
+    match board.(r).(c) with
+    |Miss | Water (None) -> None
+    |Water (Some s) -> Some s
+
+
 end
 
