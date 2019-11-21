@@ -1,13 +1,13 @@
 ----------------------------- INSTRUCTIONS FOR MULTIPLAYER -----------------------------------------------------------------
-To run the multiplayer set up on one computer (as that's how it's currently configured.)
+To run the multiplayer set up on one computer (as that's how it's currently configured.):
 
 First, you need to launch three terminals in the directory of battleship.
 
-For the first terminal, type in "make server". This will initialize the server with your private/local ip address. This should either be 127.0.1.1 or 127.0.0.1. The server should tell you what IP address it used in the console. Note: The server port is 8080
+For the first terminal, type in "make server". This will initialize the server with your private/local ip address. The server should tell you what IP address it used in the console. This is the ip address you will use to connect to the server. Note: The server port is 8080
 
-For the next two terminals, type in "make client". This will prompt you to enter an IP address and a port of the server. For the ip address, enter the IP address that the server outputted such as "127.0.0.1" as in the previous step. After typing your IP, press enter. You will then be prompted to enter a port. Type in 8080 and press enter. You will know you are connected to the server by the battleship welcome screen that appears after entering in your port and IP address on the client console.
+For the next two terminals, type in "make client". This will prompt you to enter thr IP address and port of the server. For the ip address, enter the IP address that the server outputted in the previous step. After typing your IP, press enter. You will then be prompted to enter a port. Type in 8080 and press enter. You will know you are connected to the server by the battleship welcome screen that appears after entering in your port and IP address on the client console.
 
-The first turn belongs to the player who connected first, in your case, it will be the first console that connected to the server.
+The first turn belongs to the player who connected first, in your case, it will be the first terminal that connected to the server.
 They will be prompted to set up their 3 ships. To place a ship down, type in the coordinate followed by the orientation (with a space between the coord and the orientation.) The orientation may be typed as either "v" or "vertical" or "h" or "horizontal". 
 Example: "A3 v" or "A3 vertical" or "a3 vertical" etc. This will repeat for each of the three ships to configure.
 
@@ -23,8 +23,8 @@ Rinse and repeat until there is a winner. (When all of a players ships have been
 
 
 Extra Notes: 
-If you type in multiple commands when its not your turn i.e. if you type for example a5, a5, a5 when its the other persons turn to hit,
-then those commands will be sent in that order when it is your turn. We plan to fix this bug.
+If you type in multiple commands when its not your turn i.e. if you type for example a5, a6, a7 when its the other persons turn to hit,
+then those commands will be sent in that order when it is your turn. This is a bug we plan to fix in the next sprint.
 
 
 

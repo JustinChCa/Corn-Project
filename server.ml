@@ -1,5 +1,4 @@
 open Unix
-open Main
 open Command
 
 type player = {
@@ -60,10 +59,8 @@ module Server = struct
       control_state players.(0).player players.(0).ic players.(0).oc;
       print_endline ("player " ^string_of_int players.(1).player ^"'s turn");
       control_state players.(1).player players.(1).ic players.(1).oc;
-
       current_state := Attack
     done
-
 
   let configure_server () = 
     failwith "DNE"
@@ -80,11 +77,11 @@ module Server = struct
     try
       bind socket_addr (ADDR_INET(get_serv_address,port_number));
       listen socket_addr 8;
+      ignore (Sys.command "clear");
       print_endline "Server running...";
-      print_endline "\n To end the server do 'control-c'";
-      print_endline ("\nYou're local ip address to connect to the server is:
-       "^(Unix.string_of_inet_addr get_serv_address));
-      print_endline ("\nYour server port is "^ (string_of_int port_number));
+      print_endline "\n To end the server use the shortcut 'control-c'    Do not use Control-Z! \n";
+      print_endline ("\nYou're local ip address to connect to the server is: "^ (Unix.string_of_inet_addr get_serv_address) |> String.trim);
+      print_endline ("\nYour server port is: "^ (string_of_int port_number));
       establish_connections socket_addr;  
       print_endline "Battleship Game Started...";
       while true do 
@@ -101,7 +98,5 @@ module Server = struct
       print_endline "The server has shutdown; Please wait some time before starting the server back up again.
       Deallocating the sockets may take some time... (~1-2 mins max.)"; exit 0
 
-  let close_connection socc= 
-    close socc
-
+  let start = run_server (); 
 end 

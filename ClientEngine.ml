@@ -61,7 +61,7 @@ let rec hit_controller player enemy print arg=
   try 
     begin
       let _ = print_boards () in 
-      let rdln = if print = true then input_line Stdlib.stdin else arg in
+      let rdln = if print = true then read_line () else arg in
       ignore (Sys.command "clear");
 
       match PlayerMaker.hit enemy (Command.find_coords rdln) with 
@@ -102,18 +102,20 @@ let rec create_client_ship f name board ic oc=
   print_endline ("Place " ^ name);
   print_board (board);
   print_endline "Enter Coordinate and Orientation";
-  let rdln = input_line Stdlib.stdin in 
+  let rdln = read_line () |> String.trim in 
   let lst = String.split_on_char ' ' rdln in 
   try 
-    let ship_constructed = (f (Command.find_coords (List.hd lst)) 
-                              (Command.orientation (List.hd (List.tl lst)))
-                            |> BoardMaker.taken board
-                            |> ShipMaker.create 
-                            |> BoardMaker.place_ship board 
-                           ) in
+    if List.length lst <> 2 then failwith "Invalid arg num" 
+    else
+      let ship_constructed = (f (Command.find_coords (List.hd lst)) 
+                                (Command.orientation (List.hd (List.tl lst)))
+                              |> BoardMaker.taken board
+                              |> ShipMaker.create 
+                              |> BoardMaker.place_ship board 
+                             ) in
 
 
-    ship_constructed,rdln
+      ship_constructed,rdln
 
   with
   | BadCoord s 
@@ -121,7 +123,7 @@ let rec create_client_ship f name board ic oc=
   | Taken s -> 
     ignore (read_line (a_endline (s ^ "\nPress Enter to try again.")));
     create_client_ship f name board ic oc
-  | _ -> ignore (read_line (a_endline ("You are missing arguments." ^ "\nPress Enter to try again.")));
+  | _ -> ignore (read_line (a_endline ("Incorrect number of arguments. Make sure it's in the form'coordinate orientation '  \nPress Enter to try again.")));
     create_client_ship f name board ic oc
 
 
