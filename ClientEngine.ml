@@ -2,82 +2,57 @@ open Player
 open Command
 open Ship
 open Board
+open Main
 
-let style = [ANSITerminal.white;]
-let a_endline s = ANSITerminal.print_string style (s ^ "\n")
+(**[print_boards player enemy print] prints the player's [player] board and also
+   displays the hits made to the enemy's [enemy] board if [print] is true. 
+   Nothing is displayed if [print] is false. *)
+let print_boards player enemy print = 
+  if print = true then
+    begin
+      ignore (Sys.command "clear");
+      print_double (PlayerMaker.get_board player) (PlayerMaker.get_board enemy); 
+      print_endline (PlayerMaker.get_name player ^ 
+                     "Your Turn.\nEnter target coordinates"); 
+    end 
+  else () 
 
-let read_txt txt = 
-  let rec t_help txt = 
-    match input_line txt with
-    | s -> s ^ "\n" ^ t_help txt
-    | exception End_of_file -> close_in txt; "\n" in
-  t_help txt
-
-let title = read_txt (open_in "bs.txt")
-
-(* true is vertical and false is horizonta*)
-
-let normal_ship (x, y) = function
-  | true -> [(x, y); (x+1, y); (x+2,y)]
-  | false -> [(x, y); (x, y+1); (x,y+2)]
-
-let l_ship (x,y) = function
-  | true -> [(x, y); (x+1, y); (x+2,y); (x+2, y+1)]
-  | false -> [(x, y); (x, y+1); (x,y+2); (x+1, y+2)]
-
-let dot (x,y) = function
-  | true -> [(x,y); (x+1, y)]
-  | false -> [(x,y); (x, y+1)]
-
-let ship_list = [(dot, "2 length ship"); (normal_ship, "3 length ship"); 
-                 (l_ship, "L ship")]
-
-let rec combine l1 l2 =
-  match l1, l2 with
-  | [], [] -> []
-  | h::t, s::x -> (h ^ "          " ^ s)::combine t x
-  | _, _ -> failwith "boards of different sizes"
-
-let print_board b =
-  BoardMaker.str_board b true 
-  |> List.iter (fun x -> a_endline x)
-
-let print_double b1 b2 =
-  combine (BoardMaker.str_board b1 true) (BoardMaker.str_board b2 false)
-  |> List.iter (fun x -> a_endline x)
-
+(**[hit_controller player enemy print arg] if [print] is true then the
+   current player [player] is allowed to issue commands to attack the enemy 
+   player [enemy]. If [print] is false, then the current player gets attacked by
+   the enemy at coordinate [arg] *)
 let rec hit_controller player enemy print arg= 
-  let print_boards () = 
-    if print = true then
-      begin
-        ignore (Sys.command "clear");
-        print_double (PlayerMaker.get_board player) (PlayerMaker.get_board enemy); 
-        print_endline (PlayerMaker.get_name player ^ 
-                       "Your Turn.\nEnter target coordinates"); 
-      end 
-    else () 
-  in 
-
   try 
     begin
-      let _ = print_boards () in 
+      let _ = print_boards player enemy print in 
       let rdln = if print = true then read_line () else arg in
       ignore (Sys.command "clear");
-
-      match PlayerMaker.hit enemy (Command.find_coords rdln) with 
-      | () -> rdln
-      | exception  t ->
-        ignore (read_line (print_endline ("Already hit the coordinate or Bad Coordinate" ^ "\nPress Enter to try again.")));
-        hit_controller player enemy print arg
+      PlayerMaker.hit enemy (Command.find_coords rdln); 
+      rdln
     end 
   with
   | BadCoord s 
   | Missed s
-  | Hitted s -> 
+  | Hitted s 
+  | Invalid_argument s ->
     ignore (read_line (print_endline (s ^ "\nPress Enter to try again.")));
     hit_controller player enemy print arg
 
 
+(**[process_condition str] loads and displays the text in the file [str] for
+   the winning / losing condition.*)
+let process_condition str = 
+  ignore (Sys.command "clear");
+  a_endline (read_txt (open_in "bs.txt"));
+  print_endline "Disconnected from server due to game over."
+
+(**[win_condition ()] triggers the winning victory screen when called. *)
+let win_condition () = 
+  process_condition "won.txt"
+
+(**[hit_handler_outbound player enemy oc] lets the current player [player] 
+   attack the enemy player enemy. Outputs the coordinate that the player
+   attacked to the server on the out_channel [oc]. *)
 let hit_handler_outbound player enemy oc =
   let coord = hit_controller player enemy true "N/A" in
   print_double (PlayerMaker.get_board player) (PlayerMaker.get_board enemy); 
@@ -87,17 +62,21 @@ let hit_handler_outbound player enemy oc =
       ignore (Sys.command "clear");
       output_string oc ("winner " ^PlayerMaker.get_name player ^"\n") ;
       flush oc ; 
-      print_endline ("You win!");
+      win_condition ();
     end 
   else
     output_string oc ("attacked " ^ coord ^"\n") ;
   flush oc ; ()
 
+(**[hit_handler_inbound player enemy arg] updates the local client
+   game of the player [player]  *)
 let hit_handler_inbound player enemy arg =
   ignore (hit_controller enemy player false arg); ()
 
-
-let rec create_client_ship f name board ic oc=
+(**[create_client_ship] creates a ship [f] and places it on the board [board] 
+   with name [name] given a coordinate and the orientation from the user when
+   prompted. *)
+let rec create_client_ship f name board=
   ignore (Sys.command "clear");
   print_endline ("Place " ^ name);
   print_board (board);
@@ -107,86 +86,61 @@ let rec create_client_ship f name board ic oc=
   try 
     if List.length lst <> 2 then failwith "Invalid arg num" 
     else
-      let ship_constructed = (f (Command.find_coords (List.hd lst)) 
-                                (Command.orientation (List.hd (List.tl lst)))
-                              |> BoardMaker.taken board
-                              |> ShipMaker.create 
-                              |> BoardMaker.place_ship board 
-                             ) in
-
-
-      ship_constructed,rdln
+      let ship_constructed = create_general_ship f name board (List.hd lst) 
+          (List.hd (List.tl lst))
+      in ship_constructed,rdln
 
   with
   | BadCoord s 
   | Invalid_argument s  
   | Taken s -> 
     ignore (read_line (a_endline (s ^ "\nPress Enter to try again.")));
-    create_client_ship f name board ic oc
-  | _ -> ignore (read_line (a_endline ("Incorrect number of arguments. Make sure it's in the form'coordinate orientation '  \nPress Enter to try again.")));
-    create_client_ship f name board ic oc
+    create_client_ship f name board
+  | _ -> ignore (read_line (a_endline ("Incorrect number of arguments. 
+  Make sure it's in the form 'coordinate orientation'  
+  \nPress Enter to try again.")));
+    create_client_ship f name board
 
 
-let rec place_client_ships board ships ic oc=
-  match ships with 
-  | [] -> []
-  | (f, name)::t ->
-
-    create_client_ship f name board ic oc:: place_client_ships board t ic oc 
-
-let rec create_enemy_ship f name board coord orient=
-  let ship_constructed = (f (Command.find_coords coord) 
-                            (Command.orientation orient)
-                          |> BoardMaker.taken board
-                          |> ShipMaker.create 
-                          |> BoardMaker.place_ship board 
-                         ) in
-
-
-  ship_constructed
-
-
+(**[place_enemy_ships board ships args] places down all the ships in [ship] on
+   the board [board] using the coordinates in [args] *)
 let rec place_enemy_ships board ships args =
   match ships, args with 
   | [],_ -> []
-  | (f,name)::t, h::j::k -> create_enemy_ship f name board h j::place_enemy_ships board t k
+  | (f,name)::t, h::j::k -> create_general_ship f name board h j::
+                            place_enemy_ships board t k
   | _ -> failwith "Env "
 
+(**[create_enemy_player size ships args] creates an enemy player with a board 
+   size of [size] and a ships list of [ships] at coordinate positions [args] *)
 let create_enemy_player size ships args = 
   let name ="enemy" in 
   let board = BoardMaker.create size size in 
   let ships = place_enemy_ships board ships args in
   PlayerMaker.create ships board name
 
-
-let create_client_player size ships ic oc= 
-  let name = " " in
+(**[create_client_player size ships ic oc] creates the client's player using a
+   board size of [size] with a list of ships [ships]. The client's ships 
+   arragnements are then transmitted to the server on the out channel [oc]*)
+let create_client_player size ships oc= 
   let board = BoardMaker.create size size in
-  let ships_tups = place_client_ships board ships ic oc in 
-  let args = List.fold_left (fun accum x -> match x with | (h,t) -> accum ^ t ^" ") "" ships_tups in 
-  let real_ships = List.fold_left (fun accum x -> match x with | (h,t) -> h::accum) [] ships_tups in 
-  ignore (Sys.command "clear");
+  let ships_tups = place_ships board ships create_client_ship in 
+  let args = List.fold_left (fun accum x -> match x with | (h,t) ->
+      accum ^ t ^" ") "" ships_tups in 
+  let real_ships = List.fold_left (fun accum x -> match x with | (h,t) -> 
+      h::accum) [] ships_tups in 
+  ignore (Sys.command "clear"); 
   print_board board;
-  output_string oc ("create-enemy "^args^"\n") ;
+  output_string oc ("create-enemy "^args^"\n"); 
   flush oc ;
   ignore (Sys.command "clear");
   print_endline "Waiting on Player 2...";
-  PlayerMaker.create real_ships board name
-
-let rec get_size () = 
-  ignore (Sys.command "clear");
-  a_endline title;
-  match read_int (a_endline "Enter size of board: ") with
-  | x when x>0 -> x
-  | exception Failure s  -> 
-    (a_endline "Please enter integers above 0 only. ";
-     ignore (read_line (a_endline "Enter to continue.")); get_size ())
-  | _ -> 
-    (a_endline "Please enter integers above 0 only. ";
-     ignore (read_line (a_endline "Enter to continue.")); get_size ())
+  PlayerMaker.create real_ships board ""
 
 
-
+(**[lobby t] displays either the lobby waiting message for waiting for more
+   users to connect to the server if [t] is true or for waiting until the other
+   person finishes their turn is [t] is false. *)
 let lobby t = 
   let disconnect_msg = "If you wish to quit the game, please do 'control-c'" in 
   ignore (Sys.command "clear");
@@ -195,9 +149,14 @@ let lobby t =
   if t= true then 
     print_endline "Please wait while others are joining..."
   else 
-    print_endline "Please wait while the other player finishes setting up their board..."
+    print_endline "Please wait while the other player finishes setting 
+    up their board..."
 
-
+(**[fail_condition ()] triggers the failure screen when a player loses. 
+   Disconnects from the server.*)
+let fail_condition () =
+  process_condition "lost.txt";
+  failwith "You lost!"
 
 
 

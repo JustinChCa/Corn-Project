@@ -1,0 +1,3 @@
+open Main
+
+let () = main ()  
