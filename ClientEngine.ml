@@ -43,8 +43,8 @@ let rec hit_controller player enemy print arg=
    the winning / losing condition.*)
 let process_condition str = 
   ignore (Sys.command "clear");
-  a_endline (read_txt (open_in "bs.txt"));
-  print_endline "Disconnected from server due to game over."
+  a_endline (read_txt (open_in str));
+  print_endline "Disconnected from server: game over."
 
 (**[win_condition ()] triggers the winning victory screen when called. *)
 let win_condition () = 
