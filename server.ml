@@ -17,37 +17,48 @@ module Server = struct
   (**[counter] is the users connected to the server *)
   let counter = ref 0
 
-  (**[players] is all the players connected to the server. *)
-  let players = Array.make 2 {player=10; ic=Stdlib.stdin;oc=Stdlib.stdout}
+  let player1 = ref {player=10; ic=Stdlib.stdin;oc=Stdlib.stdout}
+
+  let player2 = ref {player=10; ic=Stdlib.stdin;oc=Stdlib.stdout}
 
   (**[current_state] is the current state of the game *)
   let current_state = ref Initialize
 
 
+  let create_player_conn socc = 
+    {player= !counter;
+     ic = in_channel_of_descr socc; 
+     oc = out_channel_of_descr socc}
+
   (**[assign_player socc] establishes a connection with the client on their
      socket address [socc]*)
   let assign_player socc = 
-    players.(!counter) <-
-      {player= !counter;
-       ic = in_channel_of_descr socc; 
-       oc = out_channel_of_descr socc};
-    print_endline ((string_of_int (!counter+1)) ^ " players connected");
-    ()
+    if !counter = 0 then 
+      begin
+        player1 := create_player_conn socc;
+      end 
+    else 
+      player2 := create_player_conn socc
+
+
 
 
   (**[establish_connections sock_addr] waits until two players have joined
      the server with the socket address [sock_addr]. Records the in_channel and
      out_channel connections for each person who connects to the server. *)
   let establish_connections sock_addr = 
+    listen sock_addr 8;
     while !counter <> 2 do 
       Unix.accept sock_addr |> fst |> assign_player;
+      print_endline ((string_of_int (!counter+1)) ^ " players connected");
+
       (if !counter = 0 then
          begin    
-           output_string players.(!counter).oc "lobby-1\n"; 
-           flush players.(!counter).oc 
+           output_string !player1.oc "lobby-1\n"; 
+           flush !player1.oc 
          end 
-       else output_string players.(!counter).oc "lobby-2\n"; 
-       flush players.(!counter).oc);
+       else output_string !player2.oc "lobby-2\n"; 
+       flush !player2.oc);
       counter := !counter +1;
     done
 
@@ -66,7 +77,7 @@ module Server = struct
     output_string oc (issue_command ()^"\n"); flush oc;
     let command = input_line ic in 
     if String.trim command = "quit" then failwith "quit";
-    let enemy_oc = if id = 0 then players.(1).oc else players.(0).oc in 
+    let enemy_oc = if id = 0 then !player2.oc else !player1.oc in 
     output_string enemy_oc (command^"\n"); flush enemy_oc 
 
   (**[game_service socc] controls the order in which players may issue commands
@@ -74,15 +85,13 @@ module Server = struct
   let game_service socc =
     while true do
 
-      print_endline ("player " ^string_of_int players.(0).player ^"'s turn");
-      control_state players.(0).player players.(0).ic players.(0).oc;
-      print_endline ("player " ^string_of_int players.(1).player ^"'s turn");
-      control_state players.(1).player players.(1).ic players.(1).oc;
+      print_endline ("player " ^string_of_int !player1.player ^"'s turn");
+      control_state !player1.player !player1.ic !player1.oc;
+      print_endline ("player " ^string_of_int !player2.player ^"'s turn");
+      control_state !player2.player !player2.ic !player2.oc;
       current_state := Attack
     done
 
-  let get_server_configs () = 
-    failwith "DNE"
 
   (**[print_load_message addr port] prints out important server info including
      the server ip address [addr] and the server port [port]. *)
@@ -96,6 +105,11 @@ module Server = struct
     print_endline ("\nYour server port is: "^ (string_of_int port));
     ()
 
+  (**[sock_dom serv_address port_number] is the domain of the socket address
+     [serv_address] and the port [port_number] *)
+  let sock_dom serv_address port_number = 
+    Unix.domain_of_sockaddr (ADDR_INET(serv_address,port_number)) 
+
   (**[run_server ()] starts up the server with the hosts local ip address 
      and with a port of 8080.  *)
   let run_server () = 
@@ -105,20 +119,15 @@ module Server = struct
       | k -> k.h_addr_list.(0) 
       | exception Not_found -> failwith "Could not find localhost"
     in 
-    let socket_addr = socket 
-        (Unix.domain_of_sockaddr (ADDR_INET(get_serv_address,port_number))) 
-        SOCK_STREAM 0 in
+    let dom = sock_dom get_serv_address port_number in 
+    let socket_addr = socket dom SOCK_STREAM 0 in
     try
       bind socket_addr (ADDR_INET(get_serv_address,port_number));
-      listen socket_addr 8;
       print_load_message get_serv_address port_number;
       establish_connections socket_addr;  
       print_endline "Battleship Game Started...";
-      while true do 
-        game_service socket_addr;
-        print_endline "server closing...";
-        close socket_addr;
-      done;
+      game_service socket_addr;
+      close socket_addr
     with 
       Unix_error (_,_,_) -> print_endline "The server is still shutting down. 
       Please give it at most 1 min to shutdown."; exit 0

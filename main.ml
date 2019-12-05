@@ -58,6 +58,7 @@ let rec hit player enemy =
   try PlayerMaker.hit enemy (Command.find_coords (read_line ())) with
   | BadCoord s 
   | Missed s
+  | Invalid_argument s
   | Hitted s -> 
     ignore (read_line (a_endline (s ^ "\nPress Enter to try again.")));
     hit player enemy

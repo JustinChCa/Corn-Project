@@ -29,29 +29,9 @@ module Client = struct
     | exception Not_found -> failwith "Could not find localhost."
 
 
-  (**[prompt_connection] prompts the user to type in the server ip address and
-     the server port and creates a socket connection to the server. *)
-  let rec prompt_connection ()= 
-    print_endline "\nPlease Type in the server ip address...\n";
-    let ip = read_line() in 
-    print_endline "\nPlease Type in the server port....\n";
-
-    match int_of_string (read_line()) with 
-    | t -> 
-      begin 
-        match create_socket_connection ip t with 
-        | k -> k
-        | exception Failure k ->
-          print_endline "Could not create connection. 
-          Server might not exist. try again.\n"; prompt_connection ()
-      end
-
-    | exception Failure j -> 
-      print_endline "Bad port; must be a number. Please Re-type\n";
-      prompt_connection ()
 
   (**[shutdown_connection inchan] shutsdown the connection to the server on the
-     in_channel [inchan]. This was used from a tutorial online. *)
+     in_channel [inchan]. *)
   let shutdown_connection inchan =
     Unix.shutdown (Unix.descr_of_in_channel inchan) Unix.SHUTDOWN_SEND 
 
@@ -93,24 +73,20 @@ module Client = struct
      server in channel [ic] and responds appropriately to the server commands
      on the out channel [oc]. *)
   let controller ic oc = 
-    try
-      while true do
-        String.trim (input_line ic) |>
-        gamestate_update ic oc 
-      done
-    with 
-      Exit -> exit 0
-    | exn -> shutdown_connection ic; 
-      close_in ic;
-      print_endline "You have lost connection to the server."; exit 0
+    while true do
+      match String.trim (input_line ic) with
+      | t -> gamestate_update ic oc t
+      | exception j -> shutdown_connection ic; 
+        close_in ic;
+        print_endline "You have lost connection to the server."; exit 0
+    done
 
   (**[connect] establishes a server connection to the provided server ip
      address and server port given by the user when prompted.*)
   let rec connect () =
     try 
       let socket = one_computer_connection () in
-      let (ic,oc) = open_connection socket 
-      in    
+      let (ic,oc) = open_connection socket in    
       controller ic oc ;
       shutdown_connection ic;
       close_in ic
