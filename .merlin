@@ -5,4 +5,6 @@ PKG unix
 PKG ocamlbuild
 PKG bisect_ppx-ocamlbuild
 PKG graphics
+PKG camlimages.png
+PKG camlimages.graphics
 PKG ANSITerminal

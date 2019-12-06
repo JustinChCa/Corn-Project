@@ -1,5 +1,6 @@
-#require "graphics";;
 open Graphics
+open Images
+open Png
 
 let draw_board (size) =
   set_color black;
@@ -10,14 +11,11 @@ let draw_board (size) =
     lineto (size_x ()) (current_y ());
     moveto 0 (current_y () + move);
     counter := !counter - 1;
-  done
+  done 
 
 
-let main () =
-  try 
-    while true do
-      open_graph " 600x600";
-      set_window_title "Battleship";
-      draw_board (25)
-
-let _ = main ()
+let main =
+  open_graph " 1000x700";
+  let img = Png.load "line.png" [] in
+  let g = Graphic_image.of_image img in
+  draw_image g 0 0;
