@@ -1,11 +1,13 @@
-MODULES=ship board authors command player main client ClientEngine server
+MODULES=ship board authors command player main client ClientEngine server engine
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
-MAIN=main.byte
+MAIN=engine.byte
 TEST=test.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind -plugin-tag 'package(bisect_ppx-ocamlbuild)'
-PKGS=unix,oUnit,str,ANSITerminal,graphics
+PKGS=unix,oUnit,str,ANSITerminal
+SERVER=server.byte
+CLIENT=client.byte
 
 default: build
 	utop
@@ -54,5 +56,8 @@ clean:
 
 server:
 	$(OCAMLBUILD) $(SERVER) && ./$(SERVER)
+
+client:
+	$(OCAMLBUILD) $(CLIENT) && ./$(CLIENT)
 
 

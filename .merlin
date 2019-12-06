@@ -1,5 +1,6 @@
 B _build
 PKG oUnit2
+PKG oUnit
 PKG str
 PKG unix
 PKG ocamlbuild

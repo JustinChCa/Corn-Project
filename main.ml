@@ -58,9 +58,21 @@ let rec hit player enemy =
   try PlayerMaker.hit enemy (Command.find_coords (read_line ())) with
   | BadCoord s 
   | Missed s
+  | Invalid_argument s
   | Hitted s -> 
     ignore (read_line (a_endline (s ^ "\nPress Enter to try again.")));
     hit player enemy
+
+let rec create_general_ship f name board coord orient=
+  let ship_constructed = (f (Command.find_coords coord) 
+                            (Command.orientation orient)
+                          |> BoardMaker.taken board
+                          |> ShipMaker.create 
+                          |> BoardMaker.place_ship board 
+                         ) in
+
+
+  ship_constructed
 
 let rec create_ship f name board=
   ignore (Sys.command "clear");
@@ -78,16 +90,17 @@ let rec create_ship f name board=
     ignore (read_line (a_endline (s ^ "\nPress Enter to try again.")));
     create_ship f name board
 
-let rec place_ships board = function
+let rec place_ships board ships func =
+  match ships with 
   | [] -> []
-  | (f, name)::t -> create_ship f name board::place_ships board t
+  | (f, name)::t -> func f name board::place_ships board t func
 
 let create_player size ships= 
   ignore (Sys.command "clear");
   a_endline title;
   let name = read_line (a_endline "Enter name for Player: ") in
   let board = BoardMaker.create size size in
-  let ships = place_ships board ships in 
+  let ships = place_ships board ships create_ship in 
   ignore (Sys.command "clear");
   print_board board;
   ignore (read_line (a_endline "This is your board, press enter to continue."));
@@ -122,7 +135,6 @@ let main () =
   and p2 = switch (); create_player size ship_list in
   turn (p1, p2)
 
-let () = main () 
 
 
 
