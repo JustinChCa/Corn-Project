@@ -13,15 +13,15 @@ end
 
 module AiMaker = struct
 
+
   type t = {diff : int; 
             mutable missed : (int*int) list; 
             mutable current : (int*int) list;
             mutable avail : (int*int) list;
             b: BoardMaker.t}
 
-
+  (* This initiates the Random seed that is used in this module.*)
   let _ = Random.self_init ()
-
 
   (** [init_avail board r c lst] creates the list of all coordinates in [board]
       ordered from left to right for each row starting with the top left coordinate
@@ -32,6 +32,10 @@ module AiMaker = struct
         init_avail board (r-1) (BoardMaker.columns board -1) lst
     else lst
 
+  (** [skip_first board r c lst] skips the last coordinate of a row and takes
+      every other coordinate in front of it until it reaches the edge. 
+      [skip_second board r c lst] takes the last coordinate of a row and takes
+      every other coordinate in front of it until it reaches the edge. *)
   let rec skip_first board r c lst : (int*int) list =
     if r > (-1) then 
       if c > 0 then skip_first board r (c-2) ((r,c-1)::lst) else
@@ -43,13 +47,16 @@ module AiMaker = struct
         skip_first board (r-1) (BoardMaker.columns board -1) lst
     else lst
 
+  (** [init_avail_cb board r c] initiates the avail list for the ai based on
+      the checkerboard strategy. Used by smart and expert ai.*)
   let init_avail_cb board r c : (int*int) list=
     if r mod 2 = c mod 2 then 
       skip_first board (BoardMaker.rows board -1) (BoardMaker.columns board -1) []
     else
       skip_second board (BoardMaker.rows board -1) (BoardMaker.columns board -1) []
 
-  (* if index > List.length avail then failwith "bad index" else remove_index avail index []*)
+  (** [remove_index lst index acc] removes the [index]th element from the list
+      [list]. Retains the order of the list after removal. *)
   let rec remove_index lst index acc: (int*int) * (int*int) list = 
     if index > 0 then 
       match lst with
@@ -60,18 +67,23 @@ module AiMaker = struct
       | h :: t -> (h, List.rev acc @ t)
       | [] -> failwith "bad index uncaught"
 
+  (** [remove_coor lst coor acc] removes the coordinate [coor] from the list
+      [lst]. Retains the order of the list after removal. *)
   let rec remove_coor lst coor acc: (int*int) * (int*int) list = 
     match lst with 
     | [] -> failwith "no such coordinate in list"
     | h::t -> if h = coor then (h, List.rev acc @ t) else
         remove_coor t coor (h :: acc)
 
+  (** [get_last] gets the last element of a list *)
   let rec get_last = function
     | [] -> failwith "empty list has no last element"
     | h::[] -> h
     | h::t -> get_last t
 
-  (* true is vertical and false is horizontal *)
+  (** [find_orientation lst] looks through the lst and figures out if the
+      coordinates are horizontally or vertically orientated. [true] is vertical
+      and [false] is horizontal. *)
   let find_orientation (lst:(int*int) list) : (int*int) * (int*int) * bool =
     match lst with
     |(ar, ac)::b:: _ -> begin
@@ -86,20 +98,26 @@ module AiMaker = struct
       end
     |_ -> failwith "not enough elements in list for find orientation"
 
-  (* 1 is dumb
-     2 is normal
-     3 is smart
-     4 is expert *)
-
+  (** [ai_init d board] creates an ai with the difficulty [d] with the board
+      [board]. References the difficulty to determine what kind of avail to 
+      initialize. The lower two difficulties will use the entire board for
+      avail. The higher two difficulties will use a minimized checkerboard
+      section of the board as avail.     
+      1 is dumb
+      2 is normal
+      3 is smart
+      4 is expert *)
   let ai_init d board =
     match d with
     | d when d = 1 || d = 2 -> 
       {diff = d; missed = []; current = []; 
-       avail = init_avail board (BoardMaker.rows board - 1) (BoardMaker.columns board - 1) [];
+       avail = init_avail board (BoardMaker.rows board - 1) 
+           (BoardMaker.columns board - 1) [];
        b = board}
     | d when d = 3 || d = 4 -> 
       {diff = d; missed = []; current = []; 
-       avail = init_avail_cb board (BoardMaker.rows board - 1) (BoardMaker.columns board - 1);
+       avail = init_avail_cb board (BoardMaker.rows board - 1) 
+           (BoardMaker.columns board - 1);
        b = board }
     | d -> failwith "invalid difficulty"
 
@@ -108,11 +126,19 @@ module AiMaker = struct
   let find_coor_r lst : (int*int) * (int*int) list= 
     remove_index lst (Random.int (List.length lst-1)) []
 
+  (** [up lst coor size acc] searches the left side of [coor] to see
+      how many unattacked spaces there are. Ends the search if it finds the
+      edge of the board or reaches the size of the largest alive ship or 
+      reaches a coordinate that's already been attacked. *)
   let rec up lst (r,c) size acc: int = 
     if r < 0 || acc = size then acc else 
     if List.mem (r,c) lst then acc else
       up lst (r-1,c) size (acc +1)
 
+  (** [down limit lst coor size acc] searches the right side of [coor] to see
+      how many unattacked spaces there are. Ends the search if it finds the
+      edge of the board or reaches the size of the largest alive ship or 
+      reaches a coordinate that's already been attacked. *)
   let rec down limit lst (r,c) size acc: int = 
     if r > limit || acc = size then acc else
     if List.mem (r,c) lst then acc else
@@ -124,11 +150,19 @@ module AiMaker = struct
   let check_vert limit lst (r,c) size : int = 
     (up lst (r-1,c) size 0) + 1 + (down limit lst (r+1,c) size 0)
 
+  (** [left lst coor size acc] searches the left side of [coor] to see
+      how many unattacked spaces there are. Ends the search if it finds the
+      edge of the board or reaches the size of the largest alive ship or 
+      reaches a coordinate that's already been attacked. *)
   let rec left lst (r,c) size acc: int = 
     if c < 0 || acc = size then acc else
     if List.mem (r,c) lst then acc else
       left lst (r,c+1) size (acc+1)
 
+  (** [right limit lst coor size acc] searches the right side of [coor] to see
+      how many unattacked spaces there are. Ends the search if it finds the
+      edge of the board or reaches the size of the largest alive ship or 
+      reaches a coordinate that's already been attacked. *)
   let rec right limit lst (r,c) size acc: int = 
     if c > limit || acc = size then acc else
     if List.mem (r,c) lst then acc else
@@ -178,30 +212,45 @@ module AiMaker = struct
           if not(List.mem (rf,cf+1) ai.missed) then
             remove_coor ai.avail (rf,cf+1) [] else failwith "wtf 2"
         end
-  (* call function to find orientation and test the two sides*)
 
-  let dumb_hit (ai:t) =
+  (** [dumb_hit ai] is the function used to make a turn on the easiest
+      difficulty. Makes a random choice for the coordinate to attack. *)
+  let dumb_hit ai =
     let coornewlst = find_coor_r ai.avail in
     ai.avail <- snd coornewlst;
     ai.missed <- (fst coornewlst):: ai.missed;
     BoardMaker.hit ai.b (fst coornewlst)
 
+  (** [determinant2 ai] chooses the right function to use based on whether or
+      not the ai has hit a ship and is still hunting it. This is the helper
+      function for normal ai. *)
   let determinant2 ai = 
     match ai.current with 
     | [] -> find_coor_r ai.avail
     |_::_ -> find_coor_hit ai 
 
+  (** [determinant3 ai int] chooses the right function to use based on whether
+      or not the ai has just successfully hit a ship and hasn't sunk it yet.
+      Uses the size of the largest alive ship [int] to use for the smart ai.
+      This is the helper function for smart ai. *)
   let determinant3 ai int =
     match ai.current with 
     | [] -> find_coor_cb ai.b ai.avail ai.missed int
     | _::_ -> find_coor_hit ai 
 
+  (** [find_ship board lst acc] finds a coordinate from avail with an enemy 
+      ship and returns that coordinate and the remaining avail list without
+      that coordinate. Used for the expert ai. *)
   let rec find_ship board lst acc = 
     let coor = List.hd lst in 
     match BoardMaker.get_coor board coor with
     |None -> find_ship board (List.tl lst) (coor::[])
     |Some s -> (coor, List.rev acc @ List.tl lst)
 
+  (** [determinant4 ai int] chooses the right function to use based on whether
+      or not the ai had previously hit a ship and hasn't sunk it yet. It takes
+      the size of the largest alive ship [int] to use for the expert ai. This 
+      is a helper function for the expert ai.*)
   let determinant4 ai int =
     match ai.current with 
     | [] -> if List.length ai.missed mod 7 = 0 then 
@@ -209,6 +258,8 @@ module AiMaker = struct
         find_coor_cb ai.b ai.avail ai.missed int
     | _::_ -> find_coor_hit ai 
 
+  (** [super_determinant ai int] determines which determinant to use using the
+      ai's difficulty. *)
   let super_determinant ai int = 
     match ai.diff with
     |2 -> determinant2 ai
@@ -216,6 +267,23 @@ module AiMaker = struct
     |4 -> determinant4 ai int
     |_ -> failwith "not a valid difficulty"
 
+
+  (** [hit ai int] calls the ai to play a turn determined by the difficulty of
+      of the ai. [int] is the size of the largest enemy ship which must be
+      positive.
+      Dumb: ai chooses a random spot on the board to attack.
+      Normal: ai chooses a random spot on the board to attack if it has not 
+        successfully hit any thing. Once it has hit a ship, it will use logic
+        to find out the rest of the ship using proximity and orientation 
+        reference.
+      Smart: ai references existing hit data and the length of the largest 
+        alive enemy ship to make a decision on where to hit. Uses the 
+        checkerboard strategy to minimize the number of turns needed to hit 
+        a ship successfully. 
+      Expert: ai does the same thing as the smart ai but for every 7 
+        unsuccessful attacks, it references enemy data to automatically find
+        a ship location and attacks it. It's cheap but effective.
+  *)
   let hit ai int =
     if ai.diff = 1 then dumb_hit ai else
       let coornewlst = super_determinant ai int in 
@@ -230,6 +298,5 @@ module AiMaker = struct
           | _ -> ai.current <- (fst coornewlst):: ai.current;
             BoardMaker.hit ai.b (fst coornewlst)
         end
-
 
 end

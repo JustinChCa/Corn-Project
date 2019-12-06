@@ -11,6 +11,7 @@ module type ai = sig
       [missed] contains coordinates attacked and missed and the coordinates
       of attacked and sunken ships.
       [current] contains attacked and unsunken ship coordinates.
+      [avail] contains coordinates that have not been attacked.
   *)
 
   type t
@@ -19,23 +20,9 @@ module type ai = sig
       the board [board]*)
   val ai_init: int -> BoardMaker.t -> t
 
-  (** [dumb_hit ai] hits a random spot that is not in lst [miss] nor 
-      in lst [hit]. Has no consideration for strategy.*)
-  val dumb_hit: t -> unit
-
-  (** [easy_hit ai] hits a random spot if there is no other spot that 
-      has been hit but the ship there is not yet sunk, e.g. the lst [hit] is 
-      nonempty. This continues to search for the unsunken ship until it is sunk. *)
-  val normal_hit: t -> unit
-
-  (** [smart_hit ai int] uses a checkerboard and space checking strategy to 
-      attack spots if there is no other spot that has been hit but the ship there
-      is not yet sunk, e.g. the lst [hit] is nonempty. This continues to search
-      for the unsunken ship until it is sunk.*)
-  val smart_hit: t -> int -> unit
-
-  (** [hax_hit ai hit] uses the same ai as the hard difficulty but every 7 turns it
-      gets lucky and hits an enemy ship with 100% certainty. *)
-  val hax_hit: t -> int -> unit
+  (** [hit ai int] calls the ai to play a turn. The ai's action is determined
+      by the difficulty of the ai. [int] is the size of the largest enemy ship, 
+      which must be positive. *)
+  val hit: t -> int -> unit
 end
 
