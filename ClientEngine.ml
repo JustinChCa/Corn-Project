@@ -15,7 +15,7 @@ let read_txt txt =
 
 let title = read_txt (open_in "bs.txt")
 
-(* true is vertical and false is horizonta*)
+(* true is vertical and false is horizontal*)
 
 let normal_ship (x, y) = function
   | true -> [(x, y); (x+1, y); (x+2,y)]

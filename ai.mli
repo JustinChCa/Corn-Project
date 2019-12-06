@@ -19,23 +19,23 @@ module type ai = sig
       the board [board]*)
   val ai_init: int -> BoardMaker.t -> t
 
-  (** [dumb_hit b miss hit] hits a random spot that is not in lst [miss] nor 
+  (** [dumb_hit ai] hits a random spot that is not in lst [miss] nor 
       in lst [hit]. Has no consideration for strategy.*)
   val dumb_hit: t -> unit
 
-  (** [easy_hit b miss hit] hits a random spot if there is no other spot that 
+  (** [easy_hit ai] hits a random spot if there is no other spot that 
       has been hit but the ship there is not yet sunk, e.g. the lst [hit] is 
       nonempty. This continues to search for the unsunken ship until it is sunk. *)
   val normal_hit: t -> unit
 
-  (** [smart_hit b miss hit] uses a checkerboard and space checking strategy to 
+  (** [smart_hit ai int] uses a checkerboard and space checking strategy to 
       attack spots if there is no other spot that has been hit but the ship there
       is not yet sunk, e.g. the lst [hit] is nonempty. This continues to search
       for the unsunken ship until it is sunk.*)
-  val smart_hit: t -> unit
+  val smart_hit: t -> int -> unit
 
-  (** [hax_hit] uses the same ai as the hard difficulty but every 7 turns it
-      gets lucky and hits an enemy ship with 100% reliability. *)
-  val hax_hit: t -> unit
+  (** [hax_hit ai hit] uses the same ai as the hard difficulty but every 7 turns it
+      gets lucky and hits an enemy ship with 100% certainty. *)
+  val hax_hit: t -> int -> unit
 end
 
