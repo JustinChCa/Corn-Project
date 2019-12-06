@@ -72,7 +72,8 @@ module BoardMaker = struct
 
   let get_coor board (r, c) : ShipMaker.t option = 
     match board.(r).(c) with
-    |Miss | Water (None) -> None
+    |Miss -> failwith "impossible, hit a missed location again"
+    |Water (None) -> None
     |Water (Some s) -> Some s
 
 

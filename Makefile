@@ -1,8 +1,8 @@
-MODULES=ship board authors command player main gui client ClientEngine server
+MODULES=ship board authors command player main gui client ClientEngine server engine
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
-MAIN=main.byte
+MAIN=engine.byte
 TEST=test.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind -plugin-tag 'package(bisect_ppx-ocamlbuild)'
 PKGS=unix,oUnit,str,ANSITerminal,graphics,camlimages.png,camlimages.graphics

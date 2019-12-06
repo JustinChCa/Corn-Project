@@ -10,6 +10,7 @@ module type Ship = sig
   val alive : t -> bool
   val coordinates : t -> coor list
   val health: t -> int
+  val get_largest: t list -> int -> int 
 end
 
 exception Hitted of string
@@ -58,6 +59,14 @@ module ShipMaker = struct
           health_helper t acc
     in 
     health_helper !ship 0
+
+  let rec get_largest (lst:t list) int =
+    match lst with
+    | [] -> int
+    | h :: t -> 
+      if alive h then 
+        if size h > int then get_largest t (size h) else get_largest t int
+      else get_largest t int
 
 end
 
