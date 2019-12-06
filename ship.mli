@@ -33,6 +33,10 @@ module type Ship = sig
   (** [health ship] is the number of alive coordinates left in the ship [ship]*)
   val health: t -> int
 
+  (** [get_largest lst int] finds the length of the largest alive ship in [lst].
+      Tail recursive. [int] should be zero. *)
+  val get_largest: t list -> int -> int 
+
 end
 
 module ShipMaker : Ship with type t = (coor * bool) list ref

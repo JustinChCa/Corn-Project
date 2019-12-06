@@ -24,8 +24,8 @@ module AiMaker = struct
   let _ = Random.self_init ()
 
   (** [init_avail board r c lst] creates the list of all coordinates in [board]
-      ordered from left to right for each row starting with the top left coordinate
-      (0,0). *)
+      ordered from left to right for each row starting with the top left 
+      coordinate (0,0). *)
   let rec init_avail board r c lst : (int*int) list = 
     if r > (-1) then 
       if c > (-1) then init_avail board r (c-1) ((r,c)::lst) else
@@ -51,9 +51,11 @@ module AiMaker = struct
       the checkerboard strategy. Used by smart and expert ai.*)
   let init_avail_cb board r c : (int*int) list=
     if r mod 2 = c mod 2 then 
-      skip_first board (BoardMaker.rows board -1) (BoardMaker.columns board -1) []
+      skip_first board (BoardMaker.rows board -1) 
+        (BoardMaker.columns board -1) []
     else
-      skip_second board (BoardMaker.rows board -1) (BoardMaker.columns board -1) []
+      skip_second board (BoardMaker.rows board -1) 
+        (BoardMaker.columns board -1) []
 
   (** [remove_index lst index acc] removes the [index]th element from the list
       [list]. Retains the order of the list after removal. *)
@@ -68,10 +70,12 @@ module AiMaker = struct
       | [] -> failwith "bad index uncaught"
 
   (** [remove_coor lst coor acc] removes the coordinate [coor] from the list
-      [lst]. Retains the order of the list after removal. *)
+      [lst]. Retains the order of the list after removal. For the checkerboard 
+      strategy, the [coor] might not be in [lst] so it will return the [coor]
+      and an unaugmented [lst]*)
   let rec remove_coor lst coor acc: (int*int) * (int*int) list = 
     match lst with 
-    | [] -> failwith "no such coordinate in list"
+    | [] -> (coor, List.rev acc)
     | h::t -> if h = coor then (h, List.rev acc @ t) else
         remove_coor t coor (h :: acc)
 
@@ -193,10 +197,14 @@ module AiMaker = struct
   let find_coor_hit ai : (int*int) * (int*int) list  =
     match ai.current with 
     | (r,c)::[] -> begin
-        if not (List.mem (r-1,c) ai.missed) then remove_coor ai.avail (r-1,c) [] 
-        else if not (List.mem (r,c+1) ai.missed) then remove_coor ai.avail (r,c+1) [] 
-        else if not (List.mem (r+1,c) ai.missed) then remove_coor ai.avail (r+1,c) [] 
-        else if not (List.mem (r, c-1) ai.missed) then remove_coor ai.avail (r,c-1) []
+        if not (List.mem (r-1,c) ai.missed) then 
+          remove_coor ai.avail (r-1,c) [] else 
+        if not (List.mem (r,c+1) ai.missed) then 
+          remove_coor ai.avail (r,c+1) [] else 
+        if not (List.mem (r+1,c) ai.missed) then 
+          remove_coor ai.avail (r+1,c) [] else 
+        if not (List.mem (r, c-1) ai.missed) then 
+          remove_coor ai.avail (r,c-1) []
         else failwith "isolated one ship"
       end
     | _ -> match find_orientation ai.current with 
