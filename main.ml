@@ -2,7 +2,9 @@ open Player
 open Command
 open Ship
 open Board
+open Ai
 
+(**[style] is the terminal battleship display style. Displays text as white. *)
 let style = [ANSITerminal.white;]
 let a_endline s = ANSITerminal.print_string style (s ^ "\n")
 
@@ -15,20 +17,31 @@ let read_txt txt =
 
 let title = read_txt (open_in "bs.txt")
 
+(**[switch ()] clears the terminal and prompts the user to press 
+   'Enter' once the players have switched. *)
 let switch () = 
   ignore (Sys.command "clear"); 
   ignore (read_line (a_endline "Please switch and hit return."))
 
 (* true is vertical and false is horizonta*)
 
+(**[normal_ship (x,y) bool] is a ship of size 2 starting at the 
+   coordinate (x,y) with a vertical orientation if [bool] is true. Horizontal
+   if [bool] is false. *)
 let normal_ship (x, y) = function
   | true -> [(x, y); (x+1, y); (x+2,y)]
   | false -> [(x, y); (x, y+1); (x,y+2)]
 
+(**[l_ship (x,y) bool] is a ship of size 3 starting at the 
+   coordinate (x,y) with a vertical orientation if [bool] is true. Horizontal
+   if [bool] is false. *)
 let l_ship (x,y) = function
   | true -> [(x, y); (x+1, y); (x+2,y); (x+2, y+1)]
   | false -> [(x, y); (x, y+1); (x,y+2); (x+1, y+2)]
 
+(**[dot (x,y) bool] is a ship of size 1 starting at the 
+   coordinate (x,y) with a vertical orientation if [bool] is true. Horizontal
+   if [bool] is false. *)
 let dot (x,y) = function
   | true -> [(x,y); (x+1, y)]
   | false -> [(x,y); (x, y+1)]
@@ -36,6 +49,8 @@ let dot (x,y) = function
 let ship_list = [(dot, "2 length ship"); (normal_ship, "3 length ship"); 
                  (l_ship, "L ship")]
 
+(**[combine l1 l2] is the board string representation given the tiles [l1] and 
+   tiles [l2].*)
 let rec combine l1 l2 =
   match l1, l2 with
   | [], [] -> []
@@ -50,6 +65,9 @@ let print_double b1 b2 =
   combine (BoardMaker.str_board b1 true) (BoardMaker.str_board b2 false)
   |> List.iter (fun x -> a_endline x)
 
+(**[hit player enemy] allows player [player] to attack their [enemy] by letting
+   them enter their coordinate of attack and subsequently attacking that 
+   coordinate. *)
 let rec hit player enemy = 
   ignore (Sys.command "clear");
   print_double (PlayerMaker.get_board player) (PlayerMaker.get_board enemy); 
@@ -73,7 +91,8 @@ let rec create_general_ship f name board coord orient=
 
 
   ship_constructed
-
+(**[create_ship f name board] creates and places a ship [f] with name [name] 
+   on the board [board] *)
 let rec create_ship f name board=
   ignore (Sys.command "clear");
   a_endline ("Place " ^ name);
@@ -95,6 +114,8 @@ let rec place_ships board ships func =
   | [] -> []
   | (f, name)::t -> func f name board::place_ships board t func
 
+(**[create_player size ships] creates a player with a board size of [size] and 
+   ships [ships] on the board. *)
 let create_player size ships= 
   ignore (Sys.command "clear");
   a_endline title;
@@ -106,6 +127,8 @@ let create_player size ships=
   ignore (read_line (a_endline "This is your board, press enter to continue."));
   PlayerMaker.create ships board name
 
+(**[turn (player,enemy)] switches the turn of whos allowed to attack 
+   between the [player] and the [enemy]. *)
 let rec turn (player, enemy) =
   switch ();
   hit player enemy;
@@ -116,6 +139,9 @@ let rec turn (player, enemy) =
   else
     turn (enemy, player)
 
+(**[get_size] is the board size that the players will use. Asks the users to 
+   input their board size. 
+   Raises: Failure if the player inputs a negative number.*)
 let rec get_size () = 
   ignore (Sys.command "clear");
   a_endline title;
@@ -128,12 +154,29 @@ let rec get_size () =
     (a_endline "Please enter integers above 0 only. ";
      ignore (read_line (a_endline "Enter to continue.")); get_size ())
 
+
+
+
+
+let rec choose_gamemode () = 
+  match read_line (a_endline "Choose Gamemode: Local Multiplayer or AI") with
+  | "local multiplayer" -> true
+  | "AI" -> false
+  | _ -> a_endline "Not a valid option"; choose_gamemode ()
+
+
+
 let main () =
   ignore (Sys.command "clear");
   let size = get_size () in
-  let p1 = create_player size ship_list
-  and p2 = switch (); create_player size ship_list in
-  turn (p1, p2)
+  let mode = choose_gamemode () in
+  if mode then 
+    let p1 = create_player size ship_list
+    and p2 = switch (); create_player size ship_list in
+    turn (p1, p2)
+  else 
+    ()
+
 
 
 
