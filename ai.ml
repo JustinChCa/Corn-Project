@@ -3,12 +3,13 @@ open Random
 open Board
 open Ship
 
-module type Ai = sig
+module type ai = sig
   type t
-  val dumb_hit: BoardMaker.t -> (int*int) list -> (int*int) list -> unit
-  val normal_hit: BoardMaker.t -> (int*int) list -> (int*int) list-> unit
-  val smart_hit: BoardMaker.t -> (int*int) list -> (int*int) list-> unit
-  val hax_hit: BoardMaker.t -> (int*int) list -> (int*int) list-> unit
+
+  val ai_init: int -> BoardMaker.t -> t
+
+  val hit: t -> int -> unit
+
 end
 
 module AiMaker = struct

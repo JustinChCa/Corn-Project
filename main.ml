@@ -157,14 +157,44 @@ let rec get_size () =
 
 
 
-
+(**[choose_gamemode ()] allows the user to choose if they want to play
+   local multiplayer or play against AI. true if local multiplayer,
+    false otherwise.*)
 let rec choose_gamemode () = 
   match read_line (a_endline "Choose Gamemode: Local Multiplayer or AI") with
   | "local multiplayer" -> true
   | "AI" -> false
   | _ -> a_endline "Not a valid option"; choose_gamemode ()
 
+(** *)
+let rec ai_turn (p1,ai,remove) = 
+  hit p1 ai;
+  print_double (PlayerMaker.get_board p1) (PlayerMaker.get_board ai); 
 
+  Ai.AiMaker.hit remove (ShipMaker.get_largest (PlayerMaker.get_ships p1) 0);
+  print_double (PlayerMaker.get_board p1) (PlayerMaker.get_board ai); 
+  ignore (read_line (a_endline "Enter to continue.")); 
+  if not (PlayerMaker.alive ai) then 
+    a_endline (PlayerMaker.get_name p1 ^ " wins.")
+  else
+    ai_turn (p1, ai,remove)
+
+
+(**[ai_initializer size] creates an AI with board size [size] and also asks
+   the player to place down their ships with a board size of [size].*)
+let ai_initializer size diff= 
+  let p1 = create_player size ship_list in 
+  let ai_board = BoardMaker.create size size in
+  let ai = Ai.AiMaker.ai_init diff ai_board in 
+  p1, ai
+
+(**[prompt_ai_difficulty ()] is the integer which corresponds to the AI 
+   difficulty that the player has chosen. *)
+let rec prompt_ai_difficulty () = 
+  match read_int (a_endline "Choose difficulty:
+   0 - Easy, 1- Medium, 2- Hard, 3- Expert") with 
+  | k when k < 5 && k >= 0-> k
+  | _ -> a_endline "Please type an appropriate int"; prompt_ai_difficulty ()
 
 let main () =
   ignore (Sys.command "clear");
@@ -176,6 +206,7 @@ let main () =
     turn (p1, p2)
   else 
     ()
+(* prompt_ai_difficulty () |> ai_initializer size |> ai_turn *)
 
 
 

@@ -29,7 +29,7 @@ let one_computer_connection () =
 
 
 (**[shutdown_connection inchan] shutsdown the connection to the server on the
-   in_channel [inchan]. *)
+   in_channel [inchan].  *)
 let shutdown_connection inchan =
   Unix.shutdown (Unix.descr_of_in_channel inchan) Unix.SHUTDOWN_SEND 
 
@@ -74,7 +74,7 @@ let controller ic oc =
   while true do
     match String.trim (input_line ic) with
     | t -> gamestate_update ic oc t
-    | exception j -> shutdown_connection ic; 
+    | exception j -> (** shutdown_connection ic; *)
       close_in ic;
       print_endline "You have lost connection to the server."; exit 0
   done
@@ -85,7 +85,7 @@ let rec connect () =
   try 
     match one_computer_connection () |> open_connection with  
     | ic, oc -> controller ic oc ;
-      shutdown_connection ic;
+      (** shutdown_connection ic; *)
       close_in ic
   with 
     End_of_file -> print_endline "You quit"; exit 0;
