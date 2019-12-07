@@ -8,6 +8,12 @@ type player = {
   oc: out_channel;
 }
 
+(**Represents a server. *)
+type server = {
+  port_number:int;
+  serv_addr:inet_addr;
+  socket_addr: file_descr;
+}
 (**State represents the different game states that the battleship game 
    could be in. *)
 type state = | Initialize | Attack | Result
@@ -39,8 +45,6 @@ module Server = struct
       end 
     else 
       player2 := create_player_conn socc
-
-
 
 
   (**[establish_connections sock_addr] waits until two players have joined
@@ -110,9 +114,9 @@ module Server = struct
   let sock_dom serv_address port_number = 
     Unix.domain_of_sockaddr (ADDR_INET(serv_address,port_number)) 
 
-  (**[run_server ()] starts up the server with the hosts local ip address 
-     and with a port of 8080.  *)
-  let run_server () = 
+  (**[configure_server ()] is a server record that contains all the important
+     server information such as the server's ip address, port, and socket addr. *)
+  let configure_server () = 
     let port_number = 8080 in
     let get_serv_address = 
       match Unix.gethostname () |> Unix.gethostbyname with
@@ -120,20 +124,32 @@ module Server = struct
       | exception Not_found -> failwith "Could not find localhost"
     in 
     let dom = sock_dom get_serv_address port_number in 
-    let socket_addr = socket dom SOCK_STREAM 0 in
+    let socket_addr = socket dom SOCK_STREAM 0 in 
+    {
+      port_number = port_number;
+      serv_addr = get_serv_address;
+      socket_addr = socket_addr;
+
+    }
+
+  (**[run_server ()] starts up the server with the hosts local ip address 
+     and with a port of 8080.  *)
+  let run_server () = 
+    let serv_info = configure_server () in
     try
-      bind socket_addr (ADDR_INET(get_serv_address,port_number));
-      print_load_message get_serv_address port_number;
-      establish_connections socket_addr;  
+      bind serv_info.socket_addr 
+        (ADDR_INET(serv_info.serv_addr,serv_info.port_number));
+      print_load_message serv_info.serv_addr serv_info.port_number;
+      establish_connections serv_info.socket_addr;  
       print_endline "Battleship Game Started...";
-      game_service socket_addr;
-      close socket_addr
+      game_service serv_info.socket_addr;
+      close serv_info.socket_addr
     with 
       Unix_error (_,_,_) -> print_endline "The server is still shutting down. 
       Please give it at most 1 min to shutdown."; exit 0
     | exc -> 
-      shutdown socket_addr SHUTDOWN_ALL;
-      close socket_addr; 
+      shutdown serv_info.socket_addr SHUTDOWN_ALL;
+      close serv_info.socket_addr; 
       print_endline "The server has shutdown; Please wait some time before 
       starting the server back up again. Deallocating the sockets may take 
       some time... (~1-2 mins max.)"; exit 0

@@ -85,11 +85,10 @@ module Client = struct
      address and server port given by the user when prompted.*)
   let rec connect () =
     try 
-      let socket = one_computer_connection () in
-      let (ic,oc) = open_connection socket in    
-      controller ic oc ;
-      shutdown_connection ic;
-      close_in ic
+      match one_computer_connection () |> open_connection with  
+      | ic, oc -> controller ic oc ;
+        shutdown_connection ic;
+        close_in ic
     with 
       End_of_file -> print_endline "You quit"; exit 0;
     | Unix_error (ENOTCONN,_,_) -> print_endline "Lost Connection"; exit 0
