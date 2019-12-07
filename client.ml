@@ -96,6 +96,6 @@ module Client = struct
     |exn -> print_endline "Connection Refused; Make sure the server is running!
     Try again! "; exit 0
 
-  (**[start] is used to load the make client and runs to function connect () *)
-  let start = ignore (Sys.command "clear"); connect ()
+  (**[start] is used to load the make client and runs to function connect () 
+     let start= ignore (Sys.command "clear"); connect () *)
 end

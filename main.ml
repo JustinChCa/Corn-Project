@@ -64,15 +64,10 @@ let rec hit player enemy =
     hit player enemy
 
 let rec create_general_ship f name board coord orient=
-  let ship_constructed = (f (Command.find_coords coord) 
-                            (Command.orientation orient)
-                          |> BoardMaker.taken board
-                          |> ShipMaker.create 
-                          |> BoardMaker.place_ship board 
-                         ) in
-
-
-  ship_constructed
+  f (Command.find_coords coord) (Command.orientation orient)
+  |> BoardMaker.taken board
+  |> ShipMaker.create 
+  |> BoardMaker.place_ship board 
 
 let rec create_ship f name board=
   ignore (Sys.command "clear");

@@ -30,6 +30,7 @@ module type Board = sig
       representing a row, in player form iff self else enemy form.*)
   val str_board: t -> bool -> string list
 
+  val to_list: t -> bool -> string list list
   (** [columns b] gives the number of columns in the board [b]. This is equal to
       the size of each row in [b] *)
   val columns: t -> int

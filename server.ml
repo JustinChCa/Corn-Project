@@ -140,5 +140,5 @@ module Server = struct
 
   (**[start] initalizes the server when a user types make server in
      the terminal. *)
-  let start = run_server (); 
+  (**let start = run_server (); *)
 end 

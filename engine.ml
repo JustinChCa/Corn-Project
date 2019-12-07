@@ -1,3 +1,3 @@
 open Main
 
-let () = main ()  
+(*let () = main () *)  

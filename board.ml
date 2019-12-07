@@ -7,6 +7,7 @@ module type Board = sig
   val create: int -> int -> t
   val hit: t -> int*int -> unit
   val str_board: t -> bool -> string list
+  val to_list: t -> bool -> string list list
   val columns: t -> int
   val rows: t -> int
   val taken : t -> (int * int) list -> (int * int) list
@@ -54,6 +55,19 @@ module BoardMaker = struct
   let str_board board self=
     let part = h_partition "-" (Array.length board) in
     List.rev (fold (fun y r acc -> part::str_row self r y::acc) board 0 [part])
+
+  let opt_to_c self coor = function
+    | Miss -> "m"
+    | Water (None) -> "n"
+    | Water (Some s) -> if ShipMaker.calive coor s then
+        begin if self then "s" else "n" end else "x"
+
+  let list_row self row y =
+    Array.mapi (fun x tile -> opt_to_c self (x, y) tile) row
+    |> Array.to_list
+
+  let to_list board self= 
+    Array.mapi (fun y row -> list_row self row y) board |> Array.to_list
 
   let columns board = Array.length board.(0)
 
