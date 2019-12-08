@@ -2,14 +2,12 @@ open Player
 open Random
 open Board
 open Ship
+open Command
 
 module type ai = sig
   type t
-
   val ai_init: int -> BoardMaker.t -> t
-
   val hit: t -> int -> unit
-
 end
 
 module AiMaker = struct
@@ -307,5 +305,26 @@ module AiMaker = struct
           | _ -> ai.current <- (fst coornewlst):: ai.current;
             BoardMaker.hit ai.b (fst coornewlst)
         end
+
+  let random_ori () = if Random.int 1 = 0 then true else false
+
+  (* infinite loop possible here...*)
+  let rec ai_create_ship (f:int*int -> bool -> (int*int) list) name board =
+    try f (Random.int (BoardMaker.rows board - List.length (f (0,0) true)),
+           Random.int (BoardMaker.columns board - List.length (f (0,0) true)))
+          (random_ori ())
+        |> BoardMaker.taken board
+        |> ShipMaker.create 
+        |> BoardMaker.place_ship board
+    with
+    | BadCoord s 
+    | Invalid_argument s  
+    | Taken s -> 
+      ai_create_ship f name board
+
+  let rec place_ships ai lst func= 
+    match lst with
+    |[] -> []
+    | (f,name)::t -> (func f name ai.b)::(place_ships ai t func)
 
 end
