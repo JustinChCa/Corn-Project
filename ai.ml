@@ -27,7 +27,7 @@ module AiMaker = struct
             ships:ShipMaker.t list}
 
   (* This initiates the Random seed that is used in this module.*)
-  let _ = Random.self_init ()
+  let init_random () = Random.self_init ()
 
   (** [init_avail board r c lst] creates the list of all coordinates in [board]
       ordered from left to right for each row starting with the top left 
@@ -191,13 +191,14 @@ module AiMaker = struct
   (** [find_coor_cb ai lst] finds a coordinate using the checkerboard 
       and the length reference strategy.*)
   let rec find_coor_cb board avail missed int : (int*int) * (int*int) list = 
-    let coor = List.hd avail in
+    let coornewlst = remove_index avail 
+        (Random.int (List.length avail -1)) [] in
     let rlimit = BoardMaker.rows board -1 in
     let climit = BoardMaker.columns board -1 in
-    if (check_horz climit missed coor (int-1)) >= int 
-    || (check_vert rlimit missed coor (int-1)) >= int
-    then (coor, List.tl avail) else
-      find_coor_cb board (List.tl avail) missed int 
+    if (check_horz climit missed (fst coornewlst) (int-1)) >= int 
+    || (check_vert rlimit missed (fst coornewlst) (int-1)) >= int
+    then coornewlst else
+      find_coor_cb board (snd coornewlst) missed int 
 
   (* true is vertical and false is horizontal *)
 
@@ -307,6 +308,7 @@ module AiMaker = struct
         a ship location and attacks it. It's cheap but effective.
   *)
   let hit ai int =
+    init_random ();
     if ai.diff = 1 then dumb_hit ai else
       let coornewlst = super_determinant ai int in 
       ai.avail <- snd coornewlst;

@@ -36,8 +36,8 @@ let normal_ship (x, y) = function
    coordinate (x,y) with a vertical orientation if [bool] is true. Horizontal
    if [bool] is false. *)
 let l_ship (x,y) = function
-  | true -> [(x, y); (x+1, y); (x+2,y); (x+2, y+1)]
-  | false -> [(x, y); (x, y+1); (x,y+2); (x+1, y+2)]
+  | true -> [(x, y); (x+1, y); (x+2,y)]
+  | false -> [(x, y); (x, y+1); (x,y+2)]
 
 (**[dot (x,y) bool] is a ship of size 1 starting at the 
    coordinate (x,y) with a vertical orientation if [bool] is true. Horizontal
