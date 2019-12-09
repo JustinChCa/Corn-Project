@@ -8,6 +8,9 @@ module type ai = sig
   type t
   val ai_init: int -> BoardMaker.t -> t
   val hit: t -> int -> unit
+  val get_board: t -> BoardMaker.t 
+  val get_ships: t -> ShipMaker.t list
+  val alive: t -> bool
 end
 
 module AiMaker = struct
@@ -17,7 +20,9 @@ module AiMaker = struct
             mutable missed : (int*int) list; 
             mutable current : (int*int) list;
             mutable avail : (int*int) list;
-            b: BoardMaker.t}
+            b: BoardMaker.t;
+            self: BoardMaker.t;
+            ships:ShipMaker.t list}
 
   (* This initiates the Random seed that is used in this module.*)
   let _ = Random.self_init ()
@@ -110,18 +115,22 @@ module AiMaker = struct
       2 is normal
       3 is smart
       4 is expert *)
-  let ai_init d board =
+  let ai_init d enemyb selfb shiplst=
     match d with
     | d when d = 1 || d = 2 -> 
       {diff = d; missed = []; current = []; 
-       avail = init_avail board (BoardMaker.rows board - 1) 
-           (BoardMaker.columns board - 1) [];
-       b = board}
+       avail = init_avail enemyb (BoardMaker.rows enemyb - 1) 
+           (BoardMaker.columns enemyb - 1) [];
+       b = enemyb;
+       self = selfb;
+       ships = shiplst}
     | d when d = 3 || d = 4 -> 
       {diff = d; missed = []; current = []; 
-       avail = init_avail_cb board (BoardMaker.rows board - 1) 
-           (BoardMaker.columns board - 1);
-       b = board }
+       avail = init_avail_cb enemyb (BoardMaker.rows enemyb - 1) 
+           (BoardMaker.columns enemyb - 1);
+       b = enemyb;
+       self = selfb;
+       ships = shiplst}
     | d -> failwith "invalid difficulty"
 
   (** [find_coor_r lst] gives a random coordinate to attack that is an
@@ -327,4 +336,9 @@ module AiMaker = struct
     |[] -> []
     | (f,name)::t -> (func f name ai.b)::(place_ships ai t func)
 
+  let get_board ai = ai.self
+
+  let get_ships ai = ai.ships
+
+  let alive ai = List.exists (fun a -> ShipMaker.alive a) ai.ships
 end

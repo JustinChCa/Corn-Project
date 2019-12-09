@@ -24,6 +24,15 @@ module type ai = sig
       by the difficulty of the ai. [int] is the size of the largest enemy ship, 
       which must be positive. *)
   val hit: t -> int -> unit
+
+  (** [get_board ai] returns the ai's own board.*)
+  val get_board: t -> BoardMaker.t 
+
+  (** [get_ships ai] returns the ai's own list of ships.*)
+  val git_ships: t -> ShipMaker.t list
+
+  (** [alive ai] is true iff at least one of ai's ships is alive.*)
+  val alive: t -> bool
 end
 
 module AiMaker : ai 
