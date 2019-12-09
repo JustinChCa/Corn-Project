@@ -6,7 +6,7 @@ open Command
 
 module type ai = sig
   type t
-  val ai_init: int -> BoardMaker.t -> t
+  val ai_init: int -> BoardMaker.t -> BoardMaker.t -> ShipMaker.t list-> t
   val hit: t -> int -> unit
   val get_board: t -> BoardMaker.t 
   val get_ships: t -> ShipMaker.t list

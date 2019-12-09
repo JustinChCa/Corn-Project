@@ -18,7 +18,7 @@ module type ai = sig
 
   (** [ai_init d board] creates the ai corresponding to the difficulty [d] and
       the board [board]*)
-  val ai_init: int -> BoardMaker.t -> t
+  val ai_init: int -> BoardMaker.t -> BoardMaker.t -> ShipMaker.t list-> t
 
   (** [hit ai int] calls the ai to play a turn. The ai's action is determined
       by the difficulty of the ai. [int] is the size of the largest enemy ship, 
@@ -29,7 +29,7 @@ module type ai = sig
   val get_board: t -> BoardMaker.t 
 
   (** [get_ships ai] returns the ai's own list of ships.*)
-  val git_ships: t -> ShipMaker.t list
+  val get_ships: t -> ShipMaker.t list
 
   (** [alive ai] is true iff at least one of ai's ships is alive.*)
   val alive: t -> bool
