@@ -1,16 +1,13 @@
-(**[orientation] represents the orientation of the desired ship*)
 type orientation =
   | Vertical
   | Horizontal
 
-(**[command] represents the types of valid commands in the game engine. *)
 type command = 
   | Attack of (int *int)
   | Place of string * (int * int) * orientation
   | Quit
   | Play
 
-(**Raised when a given cordinate cannot be numericaly represented. *)
 exception BadCoord of string
 let error_bad_coord = "Bad coordinates, must be in the form of L.#."
 
@@ -18,6 +15,8 @@ let error_bad_coord = "Bad coordinates, must be in the form of L.#."
 let chars = Str.regexp "[A-Z]+"
 let numbers = Str.regexp "[0-9]+"
 
+(**[int_of_l s c] is the integer coordinate corresponding to the string [s]
+   and int [c] in our battleship game *)
 let rec int_of_l s c =
   if c = 0 then 0 else
     int_of_float 

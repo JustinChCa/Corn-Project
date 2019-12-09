@@ -50,9 +50,6 @@ let process_condition str =
 let win_condition () = 
   process_condition "won.txt"
 
-(**[hit_handler_outbound player enemy oc] lets the current player [player] 
-   attack the enemy player enemy. Outputs the coordinate that the player
-   attacked to the server on the out_channel [oc]. *)
 let hit_handler_outbound player enemy oc =
   let coord = hit_controller player enemy true "N/A" in
   print_double (PlayerMaker.get_board player) (PlayerMaker.get_board enemy); 
@@ -68,8 +65,7 @@ let hit_handler_outbound player enemy oc =
     output_string oc ("attacked " ^ coord ^"\n") ;
   flush oc ; ()
 
-(**[hit_handler_inbound player enemy arg] updates the local client
-   game of the player [player]  *)
+
 let hit_handler_inbound player enemy arg =
   ignore (hit_controller enemy player false arg); ()
 
@@ -111,17 +107,13 @@ let rec place_enemy_ships board ships args =
                             place_enemy_ships board t k
   | _ -> failwith "Env "
 
-(**[create_enemy_player size ships args] creates an enemy player with a board 
-   size of [size] and a ships list of [ships] at coordinate positions [args] *)
+
 let create_enemy_player size ships args = 
   let name ="enemy" in 
   let board = BoardMaker.create size size in 
   let ships = place_enemy_ships board ships args in
   PlayerMaker.create ships board name
 
-(**[create_client_player size ships ic oc] creates the client's player using a
-   board size of [size] with a list of ships [ships]. The client's ships 
-   arragnements are then transmitted to the server on the out channel [oc]*)
 let create_client_player size ships oc= 
   let board = BoardMaker.create size size in
   let ships_tups = place_ships board ships create_client_ship in 
@@ -137,10 +129,6 @@ let create_client_player size ships oc=
   print_endline "Waiting on Player 2...";
   PlayerMaker.create real_ships board ""
 
-
-(**[lobby t] displays either the lobby waiting message for waiting for more
-   users to connect to the server if [t] is true or for waiting until the other
-   person finishes their turn is [t] is false. *)
 let lobby t = 
   let disconnect_msg = "If you wish to quit the game, please do 'control-c'" in 
   ignore (Sys.command "clear");
@@ -152,8 +140,7 @@ let lobby t =
     print_endline "Please wait while the other player finishes setting 
     up their board..."
 
-(**[fail_condition ()] triggers the failure screen when a player loses. 
-   Disconnects from the server.*)
+
 let fail_condition () =
   process_condition "lost.txt";
   failwith "You lost!"

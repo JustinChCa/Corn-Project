@@ -60,10 +60,11 @@ module BoardMaker = struct
     | Miss -> "m"
     | Water (None) -> "n"
     | Water (Some s) -> if ShipMaker.calive coor s then
-        begin if self then "s" else "n" end else "x"
+        begin if self then "s" else "n" end 
+      else "x"
 
   let list_row self row y =
-    Array.mapi (fun x tile -> opt_to_c self (x, y) tile) row
+    Array.mapi (fun x tile -> opt_to_c self (y, x) tile) row
     |> Array.to_list
 
   let to_list board self= 
@@ -75,14 +76,15 @@ module BoardMaker = struct
 
   let rec taken board = function
     | [] -> []
-    | (y,x)::t -> match board.(y).(x) with 
+    | (y,x)::t -> match (board.(y)).(x) with 
       | Water (None) -> (y,x)::taken board t
       | Water (Some j) -> raise (Taken "Ship is overlapping with another.")
       | Miss -> failwith "Miss shouldn't exist yet."
 
   let place_ship board ship = 
     List.iter (fun (y,x) -> board.(y).(x) <- Water (Some ship)) 
-      (ShipMaker.coordinates ship); ship
+      (ShipMaker.coordinates ship); 
+    ship
 
   let get_coor board (r, c) : ShipMaker.t option = 
     match board.(r).(c) with

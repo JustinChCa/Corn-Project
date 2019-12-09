@@ -1,14 +1,12 @@
 
-type coor = (int * int)
-
 module type Ship = sig
   type t
   val size : t -> int
-  val create : coor list -> t
-  val hit : coor -> t -> unit
-  val calive : coor -> t -> bool
+  val create : (int * int) list -> t
+  val hit : (int * int) -> t -> unit
+  val calive : (int * int) -> t -> bool
   val alive : t -> bool
-  val coordinates : t -> coor list
+  val coordinates : t -> (int * int) list
   val health: t -> int
   val get_largest: t list -> int -> int 
 end
@@ -16,7 +14,7 @@ end
 exception Hitted of string
 
 module ShipMaker = struct
-  type t = (coor * bool) list ref
+  type t = ((int * int) * bool) list ref
 
   let size ship =
     List.length !ship
@@ -37,18 +35,14 @@ module ShipMaker = struct
   let rec calive coor ship =
     let rec coor_helper = function
       | [] -> failwith "Empty List Failure."
-      | (c, b)::t -> 
-        match Stdlib.compare c coor with
-        | 0 -> b
-        | x when x<0 -> coor_helper t
-        | _ -> failwith "Comparison Failure." in
+      | (c, b)::t -> if c = coor then b else coor_helper t in
     coor_helper !ship
 
   let alive ship =
     List.exists (fun (c,b) -> b) !ship
 
   let coordinates ship =
-    List.map (fun ((x,y), b) -> (x,y)) !ship
+    List.map (fun ((y, x), b) -> (y, x)) !ship
 
   let rec health ship = 
     let rec health_helper lst acc =

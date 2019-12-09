@@ -1,7 +1,6 @@
 (** Ship builder *)
 
 (** [coor] represents a coordination in the form of Letter-Number *)
-type coor = int * int
 
 exception Hitted of string
 
@@ -15,20 +14,20 @@ module type Ship = sig
   val size : t -> int
 
   (** [create lst] creates a ship with the coordinate list [lst]*)
-  val create : coor list -> t
+  val create : (int * int) list -> t
 
   (** [hit coor s] is the ship [s] with the coordinate [coord] set to false.
       Raises: [Hitted] if coordinate has already been hit. *)
-  val hit : coor -> t -> unit
+  val hit : int * int -> t -> unit
 
   (** [calive coor s] is true iff [coor] hasn't been hit.*)
-  val calive : coor -> t -> bool
+  val calive : int * int -> t -> bool
 
   (** [alive s] is true if there exists a coordinate in ship [s] that is true.*)
   val alive: t -> bool
 
   (** [coordinates s] is the list of coordinates of [s]. *)
-  val coordinates : t -> coor list
+  val coordinates : t -> (int * int) list
 
   (** [health ship] is the number of alive coordinates left in the ship [ship]*)
   val health: t -> int
@@ -39,4 +38,4 @@ module type Ship = sig
 
 end
 
-module ShipMaker : Ship with type t = (coor * bool) list ref
+module ShipMaker : Ship with type t = ((int * int) * bool) list ref

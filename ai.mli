@@ -26,3 +26,4 @@ module type ai = sig
   val hit: t -> int -> unit
 end
 
+module AiMaker : ai 

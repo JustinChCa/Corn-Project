@@ -1,3 +1,2 @@
 open Main
-
-(*let () = main () *)  
+let start = main ()
