@@ -41,3 +41,14 @@ let orientation line =
   | "h"
   | "horizontal" -> false
   | _ -> raise (Invalid_argument "Vertical or Horizontal only.")
+
+
+(**[convert_coordinate (a,b)] is the string representation of the tuple int
+   coordinate [(a,b)].
+   Example: (1,2) -> "b3" *)
+let convert_coordinate (a,b) = 
+  let ascii_char = Char.chr (a+65) |> Char.escaped in 
+  let board_num = b+1 in 
+  ""^ascii_char^string_of_int board_num
+
+

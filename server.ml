@@ -1,10 +1,15 @@
 open Unix
 open Command
 
+type socket = 
+  {
+    in_channel: in_channel;
+    out_channel: out_channel
+  }
+
 type player = {
-  player: int;
-  ic: in_channel;
-  oc: out_channel;
+  player: string;
+  socket: socket
 }
 
 type server = {
@@ -20,45 +25,55 @@ type state = | Initialize | Attack | Result
 let counter = ref 0
 
 (**[player1] is the first player connected to the server *)
-let player1 = ref {player=10; ic=Stdlib.stdin;oc=Stdlib.stdout}
+let player1 = ref {player="p10"; socket={in_channel=Stdlib.stdin; 
+                                         out_channel=Stdlib.stdout}}
 
 (**[player2] is the second player connected to the server. *)
-let player2 = ref {player=10; ic=Stdlib.stdin;oc=Stdlib.stdout}
+let player2 = ref {player="p10"; socket={in_channel=Stdlib.stdin; 
+                                         out_channel=Stdlib.stdout}}
 
 (**[current_state] is the current state of the game *)
 let current_state = ref Initialize
 
 
-let create_player_conn socc = 
-  {player= !counter;
-   ic = in_channel_of_descr socc; 
-   oc = out_channel_of_descr socc}
+let create_player_conn socc name= 
+  {player= name;
+   socket=
+     {in_channel = in_channel_of_descr socc; 
+      out_channel = out_channel_of_descr socc}}
+
+
+
 
 (**[assign_player socc] creates a connection with the client on their
    socket address [socc]*)
 let assign_player socc = 
-  if !counter = 0 then 
-    begin
-      player1 := create_player_conn socc;
-    end 
-  else 
-    player2 := create_player_conn socc
+
+  (if !counter = 0 then 
+     begin
+       player1 := create_player_conn socc "p1";
+
+     end 
+   else 
+     player2 := create_player_conn socc "p2");
+  print_endline ((string_of_int (!counter+1)) ^ " players connected");
+
+  !counter
 
 
 let establish_connections sock_addr = 
   listen sock_addr 8;
   while !counter <> 2 do 
-    Unix.accept sock_addr |> fst |> assign_player;
-    print_endline ((string_of_int (!counter+1)) ^ " players connected");
+    match accept sock_addr |> fst |> assign_player with 
+    | k when k=0 ->   
+      output_string !player1.socket.out_channel "lobby-1\n"; 
+      flush !player1.socket.out_channel 
 
-    (if !counter = 0 then
-       begin    
-         output_string !player1.oc "lobby-1\n"; 
-         flush !player1.oc 
-       end 
-     else output_string !player2.oc "lobby-2\n"; 
-     flush !player2.oc);
-    counter := !counter +1;
+    | k when k=1-> output_string !player2.socket.out_channel "lobby-2\n"; 
+      flush !player2.socket.out_channel
+    | _ -> ignore(failwith "Invariant Violated! 2 Players Exceeded!");
+
+      counter := !counter +1;
   done
 
 
@@ -68,14 +83,15 @@ let issue_command () =
   | Attack -> "attack "
   | Result -> "winner "
 
-(**[control_state id ic oc] is player [id]'s current turn on the in channel
-   [ic] and the out channel [oc] for that player. Tells 
-   the server to allow player [id] to issue commands. *)
-let control_state id ic oc=
-  output_string oc (issue_command ()^"\n"); flush oc;
-  let command = input_line ic in 
+(**[control_state id in_channel out_channel] is player [id]'s current turn 
+   on the in channel [in_channel] and the out channel [out_channel] for that 
+   player. Tells the server to allow player [id] to issue commands. *)
+let control_state id in_channel out_channel=
+  output_string out_channel (issue_command ()^"\n"); flush out_channel;
+  let command = input_line in_channel in 
   if String.trim command = "quit" then failwith "quit";
-  let enemy_oc = if id = 0 then !player2.oc else !player1.oc in 
+  let enemy_oc = if id = "p1" then !player2.socket.out_channel else 
+      !player1.socket.out_channel in 
   output_string enemy_oc (command^"\n"); flush enemy_oc 
 
 (**[game_service socc] controls the order in which players may issue commands
@@ -83,10 +99,12 @@ let control_state id ic oc=
 let game_service socc =
   while true do
 
-    print_endline ("player " ^string_of_int !player1.player ^"'s turn");
-    control_state !player1.player !player1.ic !player1.oc;
-    print_endline ("player " ^string_of_int !player2.player ^"'s turn");
-    control_state !player2.player !player2.ic !player2.oc;
+    print_endline ("player " ^ !player1.player ^"'s turn");
+    control_state !player1.player !player1.socket.in_channel 
+      !player1.socket.out_channel;
+    print_endline ("player " ^ !player2.player ^"'s turn");
+    control_state !player2.player !player2.socket.in_channel 
+      !player2.socket.out_channel;
     current_state := Attack
   done
 

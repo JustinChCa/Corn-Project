@@ -166,27 +166,32 @@ let rec choose_gamemode () =
   | "AI" -> false
   | _ -> a_endline "Not a valid option"; choose_gamemode ()
 
-(** *)
-let rec ai_turn (p1,ai,remove) = 
-  hit p1 ai;
-  print_double (PlayerMaker.get_board p1) (PlayerMaker.get_board ai); 
+(**[ai_turn p1 ai] allows the player to attack the AI, which is then followed
+   by the AI attacking the player. This is repeated until either the AI or the 
+   player wins.
+*)
+let rec ai_turn (p1,ai_player,ai) = 
+  hit p1 ai_player;
+  print_double (PlayerMaker.get_board p1) (PlayerMaker.get_board ai_player); 
 
-  Ai.AiMaker.hit remove (ShipMaker.get_largest (PlayerMaker.get_ships p1) 0);
-  print_double (PlayerMaker.get_board p1) (PlayerMaker.get_board ai); 
+  Ai.AiMaker.hit ai (ShipMaker.get_largest (PlayerMaker.get_ships p1) 0);
+  print_double (PlayerMaker.get_board p1) (PlayerMaker.get_board ai_player); 
   ignore (read_line (a_endline "Enter to continue.")); 
-  if not (PlayerMaker.alive ai) then 
+  if not (PlayerMaker.alive ai_player) then 
     a_endline (PlayerMaker.get_name p1 ^ " wins.")
   else
-    ai_turn (p1, ai,remove)
+    ai_turn (p1, ai_player,ai)
 
 
-(**[ai_initializer size] creates an AI with board size [size] and also asks
-   the player to place down their ships with a board size of [size].*)
+(**[ai_initializer size] is a three element tuple that contains the created AI
+   with board size [board], the AI Player type, and also the player created by 
+   asking the player to place down their ships with a board size of [size].*)
 let ai_initializer size diff= 
   let p1 = create_player size ship_list in 
   let ai_board = BoardMaker.create size size in
+  let ai_player = PlayerMaker.create [] ai_board "AI" in 
   let ai = Ai.AiMaker.ai_init diff ai_board in 
-  p1, ai
+  p1, ai_player, ai
 
 (**[prompt_ai_difficulty ()] is the integer which corresponds to the AI 
    difficulty that the player has chosen. *)
@@ -205,8 +210,7 @@ let main () =
     and p2 = switch (); create_player size ship_list in
     turn (p1, p2)
   else 
-    ()
-(* prompt_ai_difficulty () |> ai_initializer size |> ai_turn *)
+    prompt_ai_difficulty () |> ai_initializer size |> ai_turn 
 
 
 
