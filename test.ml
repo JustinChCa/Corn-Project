@@ -21,6 +21,8 @@
 
 open OUnit2
 open Command
+open Ship
+
 
 
 module Player = Player.PlayerMaker
@@ -48,28 +50,27 @@ let test_player_isalive name expected_output player =
 let test_board_size name expected_output board = 
   name >:: (fun _ -> assert_equal expected_output (Board.columns board))
 
-open Ship
 
 let ship_attack_test name coordinate ship =  
-  name >:: (fun _ ->   hit coordinate ship; assert_equal false 
-               (calive coordinate ship))
+  name >:: (fun _ ->   Ship.hit coordinate ship; assert_equal false 
+               (Ship.calive coordinate ship))
 
 let exception_test name exc func = 
   name >:: (fun _ -> assert_raises exc func)
 
 let ship_isalive_test name expected_output ship = 
   name >:: (fun _ -> assert_equal expected_output 
-               (print_endline "is_aliver asserT"; alive ship))
+               (print_endline "is_aliver asserT"; Ship.alive ship))
 
 let ship_health_test name expected_output ship = 
-  name >:: (fun _ -> assert_equal expected_output (health ship) 
+  name >:: (fun _ -> assert_equal expected_output (Ship.health ship) 
                ~printer:string_of_int)
 
 let ship_coordinates_test name expected_output ship = 
-  name >:: (fun _ -> assert_equal expected_output (coordinates ship))
+  name >:: (fun _ -> assert_equal expected_output (Ship.coordinates ship))
 
 let ship_size_test name expected_output ship =
-  name >:: (fun _ -> assert_equal expected_output (size ship))
+  name >:: (fun _ -> assert_equal expected_output (Ship.size ship))
 
 let player_getships_test name expected_output player = 
   name >:: (fun _ -> assert_equal expected_output (Player.get_ships player))
@@ -84,7 +85,9 @@ let command_orientation_test name expected_output str =
   name >:: (fun _ -> assert_equal expected_output (Command.orientation str))
 
 let command_coord_test name expected_output str = 
-  name >:: (fun _ -> assert_equal expected_output (Command.find_coords str))
+  name >:: (fun _ -> assert_equal expected_output (Command.find_coords str)
+               ~printer:(fun x -> match x with | v1,v2 -> 
+                   "("^string_of_int v1^","^string_of_int v2^")"))
 
 let board_getcoor_test name expected_output board coor = 
   name >:: (fun _ -> assert_equal expected_output (Board.get_coor board coor))
@@ -106,42 +109,50 @@ let board_get_largest name expected_output ships =
   name >:: (fun _ -> assert_equal expected_output (Ship.get_largest ships 0) 
                ~printer:string_of_int)
 
+let ai_initboard_test name expected_output ai = 
+  name >:: (fun _ -> assert_equal expected_output (Ai.AiMaker.get_board ai))
+
+
 let sink_ship_test name= 
   name >:: (fun _ -> 
 
-      hit (1,1) ship_destroyer; 
+      Ship.hit (1,1) ship_destroyer; 
 
-      assert_equal false  (calive (1,1) ship_destroyer); 
-      assert_equal true (alive ship_destroyer);
-      assert_equal 2 (health ship_destroyer);
+      assert_equal false  (Ship.calive (1,1) ship_destroyer); 
+      assert_equal true (Ship.alive ship_destroyer);
+      assert_equal 2 (Ship.health ship_destroyer);
       assert_equal true (Player.alive player);
 
-      hit (1,2) ship_destroyer; 
-      assert_equal false  (calive (1,2) ship_destroyer);
-      assert_equal true  (alive ship_destroyer);
-      assert_equal 1 (health ship_destroyer);
+      Ship.hit (1,2) ship_destroyer; 
+      assert_equal false  (Ship.calive (1,2) ship_destroyer);
+      assert_equal true  (Ship.alive ship_destroyer);
+      assert_equal 1 (Ship.health ship_destroyer);
 
-      hit (1,3) ship_destroyer; 
-      assert_equal false  (calive (1,3) ship_destroyer);
-      assert_equal false  (calive (1,1) ship_destroyer);
-      assert_equal false  (calive (1,2) ship_destroyer);
-      assert_equal false  (alive ship_destroyer);
-      assert_equal 0 (health ship_destroyer);
+      Ship.hit (1,3) ship_destroyer; 
+      assert_equal false  (Ship.calive (1,3) ship_destroyer);
+      assert_equal false  (Ship.calive (1,1) ship_destroyer);
+      assert_equal false  (Ship.calive (1,2) ship_destroyer);
+      assert_equal false  (Ship.alive ship_destroyer);
+      assert_equal 0 (Ship.health ship_destroyer);
 
-      hit (2,1) ship_sub;
-      assert_equal false (calive (2,1) ship_sub);
-      assert_equal true (alive ship_sub);
+      Ship.hit (2,1) ship_sub;
+      assert_equal false (Ship.calive (2,1) ship_sub);
+      assert_equal true (Ship.alive ship_sub);
 
-      hit (3,1) ship_sub;
+      Ship.hit (3,1) ship_sub;
 
-      assert_equal false (calive (2,1) ship_sub);
-      assert_equal false (calive (3,1) ship_sub);
-      assert_equal false (alive ship_sub);
+      assert_equal false (Ship.calive (2,1) ship_sub);
+      assert_equal false (Ship.calive (3,1) ship_sub);
+      assert_equal false (Ship.alive ship_sub);
       assert_equal false (Player.alive player))
 
 let ship_alive_sub = Ship.create [(1,1);(1,2)]
 let ship_alive_destroyer = Ship.create [(3,2);(4,2);(5,2)]
 let ship_alive_overlap = Ship.create [(1,1)]
+
+let ship_attacked ()= 
+  let ship = Ship.create [(0,0)] in 
+  Ship.hit (0,0) ship; Ship.hit (0,0) ship
 
 let ship_tests = [
   ship_size_test "size with destroyer is 3" 3 ship_destroyer;
@@ -165,7 +176,14 @@ let ship_tests = [
   board_get_largest "tests the length of the largest ship inside a ship
   list of 3. Edge case: ship list which contains overlapping ships. 
   The result should be 3" 3 [ship_alive_sub;
-                             ship_alive_destroyer;ship_alive_overlap]
+                             ship_alive_destroyer;ship_alive_overlap];
+
+  exception_test "tests that an exception Hitted is raised when a player 
+  attacks a coordinate that has already been attacked before." 
+    (Hitted("You have already hit this spot.")) (fun () -> ship_attacked ())
+
+
+
 
 ]
 
@@ -176,11 +194,25 @@ let board_1 () =
   ignore (Board.place_ship board ship_destroyer); 
   board
 
+let ai_tests = [
+  ai_initboard_test "tests the initialization function of the AI module; checks
+  to see if the correct board is returned when given two different boards" board 
+    (Ai.AiMaker.ai_init 3 (board_1 ()) board [ship_destroyer]);
+  ai_initboard_test "tests the initialization function of the AI module; checks
+  to see if the correct board is returned when given two duplicate boards"
+    (board_1 ()) (Ai.AiMaker.ai_init 3 (board_1 ()) (board_1 ()) 
+                    [ship_destroyer])
 
+
+
+
+
+]
 
 let board_tests = [
   test_board_size "Tests board config of 10x10 board" 10 (Board.create 10 10);
-  test_board_size "Tests board config of 20x20 board" 20 (Board.create 20 20);
+  test_board_size "Tests extreme board config of 70x70 board" 70 
+    (Board.create 70 70);
 
 
   board_placeship_test "tests placing down a ship that does not overlap
@@ -211,7 +243,11 @@ let board_tests = [
 
 ]
 
-
+let ship_dead () =
+  let ship = Ship.create [(0,0)] in 
+  let board = Board.create 1 1 in
+  let placed_ship = Board.place_ship board ship in 
+  hit board (0,0); placed_ship 
 
 let player_tests = [
   player_getships_test "player has only one ship of coordinate (1,1) in the 
@@ -240,12 +276,16 @@ let player_tests = [
   player_getname_test "expected to return an empty string; this
   is an edge case test" "" (Player.create [] (Board.create 1 1) "");
 
-  test_player_isalive "tests whether a player with no ships is alive; should
-  return false" false (Player.create [] (Board.create 1 1) "p1");
+  test_player_isalive "tests whether a player with no ships in the board, 
+  is alive; should be false" false (Player.create [] (Board.create 1 1) "p1");
 
   test_player_isalive "tests whether a player with one remaining ship is alive; 
   should return true" true (Player.create [ship_alive_sub] 
-                              (Board.create 1 1) "p1")
+                              (Board.create 1 1) "p1");
+
+  test_player_isalive "tests whether a player with one dead ship on the board is
+  alive; should return false" false (Player.create [ship_dead ()] 
+                                       (Board.create 1 1) "p1")
 
 
 
@@ -260,8 +300,8 @@ let command_tests = [
   caps and spaces before the coord; edge case" (0,4) "                A5";
   command_coord_test "tests a regular coordinate string with all 
   caps and spaces before and after the coord; edge case" (0,4) "       A5   ";
-  command_coord_test "tests the boundaries; edge case" (0,25) "a26";
-  command_coord_test "tests the boundaries; edge case" (25,25) "Z26";
+  command_coord_test "tests the boundaries on the last letter of the alphabet;
+   edge case" (25,25) "Z26";
   command_coord_test "edge case where there are random special characters
   in the middle; should return (25,25) still." (25,25) "Z----26";
 
@@ -269,6 +309,11 @@ let command_tests = [
   (fun _ -> assert_raises 
       (BadCoord "Bad coordinates, must be in the form of L.#.") 
       (fun () -> Command.find_coords "lol"));
+
+  command_coord_test "tests a string whose coordinates involve two letters at 
+  the start; should return (27,5)" 
+    (27,5) "ab6";
+
   command_orientation_test "Tests orientation vertical orientation; 
     should return true" true "vertical";
   command_orientation_test "tests vertical orientation with string 'v'; 
@@ -295,11 +340,10 @@ let command_tests = [
 
 
 
-
-
 ]
 
 let suite = "test suite" >::: 
-            List.flatten [ship_tests;board_tests;player_tests;command_tests]
+            List.flatten [ship_tests;board_tests;player_tests;
+                          command_tests;ai_tests]
 
 let _ = run_test_tt_main suite

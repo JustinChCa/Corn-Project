@@ -36,8 +36,8 @@ let normal_ship (x, y) = function
    coordinate (x,y) with a vertical orientation if [bool] is true. Horizontal
    if [bool] is false. *)
 let l_ship (x,y) = function
-  | true -> [(x, y); (x+1, y); (x+2,y)]
-  | false -> [(x, y); (x, y+1); (x,y+2)]
+  | true -> [(x, y); (x+1, y); (x+2,y); (x+3, y)]
+  | false -> [(x, y); (x, y+1); (x,y+2); (x, y+3)]
 
 (**[dot (x,y) bool] is a ship of size 1 starting at the 
    coordinate (x,y) with a vertical orientation if [bool] is true. Horizontal
@@ -47,7 +47,7 @@ let dot (x,y) = function
   | false -> [(x,y); (x, y+1)]
 
 let ship_list = [(dot, "2 length ship"); (normal_ship, "3 length ship"); 
-                 (l_ship, "L ship")]
+                 (l_ship, "destroyer ship")]
 
 (**[combine l1 l2] is the board string representation given the tiles [l1] and 
    tiles [l2].*)
@@ -175,8 +175,11 @@ let rec ai_turn (p1,ai_player,ai) =
   ignore (read_line (a_endline "Enter to continue.")); 
   if not (PlayerMaker.alive ai_player) then 
     a_endline (PlayerMaker.get_name p1 ^ " wins.")
-  else
+  else if not (PlayerMaker.alive p1) then
+    a_endline (PlayerMaker.get_name ai_player ^ " wins.")
+  else 
     ai_turn (p1, ai_player,ai)
+
 
 
 (**[ai_initializer size] is a three element tuple that contains the created AI

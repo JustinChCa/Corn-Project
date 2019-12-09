@@ -48,7 +48,7 @@ let process_condition str =
 
 (**[win_condition ()] triggers the winning victory screen when called. *)
 let win_condition () = 
-  process_condition "assets/won.txt"
+  process_condition ("assets"^Filename.dir_sep^"won.txt")
 
 let hit_handler_outbound player enemy oc =
   let coord = hit_controller player enemy true "N/A" in
@@ -142,7 +142,7 @@ let lobby t =
 
 
 let fail_condition () =
-  process_condition "assets/lost.txt";
+  process_condition ("assets"^Filename.dir_sep^"lost.txt");
   failwith "You lost!"
 
 
