@@ -85,28 +85,33 @@ module AiMaker = struct
     | h::t -> if h = coor then (h, List.rev acc @ t) else
         remove_coor t coor (h :: acc)
 
-  (** [get_last] gets the last element of a list *)
-  let rec get_last = function
-    | [] -> failwith "empty list has no last element"
-    | h::[] -> h
-    | h::t -> get_last t
+  (** [get_last lst coor] gets the largest element of a list *)
+  let rec get_last lst coor = 
+    match lst with
+    | [] -> coor
+    |(r,c) :: t -> if (r > (fst coor)) || (c > (snd coor)) then 
+        get_last t (r,c) else get_last t coor
+
+  (** [get_first lst coor] gets the smallest element of a list *)
+  let rec get_first lst coor = 
+    match lst with
+    | [] -> coor
+    |(r,c) :: t -> if (r < (fst coor)) || (c < (snd coor)) then
+        get_first t (r,c) else get_first t coor
 
   (** [find_orientation lst] looks through the lst and figures out if the
       coordinates are horizontally or vertically orientated. [true] is vertical
       and [false] is horizontal. *)
   let find_orientation (lst:(int*int) list) : (int*int) * (int*int) * bool =
-    match lst with
-    |(ar, ac)::b:: _ -> begin
-        match get_last lst with 
-        | (lr, lc) -> begin
-            if (ar < lr) && (ac = lc) then ((ar,ac),(lr,lc), true) else
-            if (ar > lr) && (ac = lc) then ((lr,lc),(ar,ac), true) else
-            if (ar = lr) && (ac < lc) then ((ar,ac),(lr,lc), false) else
-            if (ar = lr) && (ac > lc) then ((lr,lc),(ar,ac), false) else
-              failwith "wtf man"
-          end
+    let (ar, ac) = get_first (List.tl lst) (List.hd lst) in
+    match get_last (List.tl lst) (List.hd lst) with 
+    | (lr, lc) -> begin
+        if (ar < lr) && (ac = lc) then ((ar,ac),(lr,lc), true) else
+        if (ar > lr) && (ac = lc) then ((lr,lc),(ar,ac), true) else
+        if (ar = lr) && (ac < lc) then ((ar,ac),(lr,lc), false) else
+        if (ar = lr) && (ac > lc) then ((lr,lc),(ar,ac), false) else
+          failwith "wtf man"
       end
-    |_ -> failwith "not enough elements in list for find orientation"
 
   (** [ai_init d board] creates an ai with the difficulty [d] with the board
       [board]. References the difficulty to determine what kind of avail to 
@@ -138,7 +143,7 @@ module AiMaker = struct
   (** [find_coor_r lst] gives a random coordinate to attack that is an
       element of the list [lst].  *)
   let find_coor_r lst : (int*int) * (int*int) list= 
-    remove_index lst (Random.int (List.length lst-1)) []
+    remove_index lst (Random.int (List.length lst)) []
 
   (** [up lst coor size acc] searches the left side of [coor] to see
       how many unattacked spaces there are. Ends the search if it finds the
@@ -192,7 +197,7 @@ module AiMaker = struct
       and the length reference strategy.*)
   let rec find_coor_cb board avail missed int : (int*int) * (int*int) list = 
     let coornewlst = remove_index avail 
-        (Random.int (List.length avail -1)) [] in
+        (Random.int (List.length avail)) [] in
     let rlimit = BoardMaker.rows board -1 in
     let climit = BoardMaker.columns board -1 in
     if (check_horz climit missed (fst coornewlst) (int-1)) >= int 
@@ -323,10 +328,11 @@ module AiMaker = struct
             BoardMaker.hit ai.b (fst coornewlst)
         end
 
-  let random_ori () = if Random.int 1 = 0 then true else false
+  let random_ori () = init_random (); if Random.int 2 = 0 then true else false
 
   (* infinite loop possible here...*)
   let rec ai_create_ship (f:int*int -> bool -> (int*int) list) name board =
+    init_random ();
     try f (Random.int (BoardMaker.rows board - List.length (f (0,0) true)),
            Random.int (BoardMaker.columns board - List.length (f (0,0) true)))
           (random_ori ())

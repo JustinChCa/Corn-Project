@@ -36,8 +36,13 @@ let normal_ship (x, y) = function
    coordinate (x,y) with a vertical orientation if [bool] is true. Horizontal
    if [bool] is false. *)
 let l_ship (x,y) = function
+<<<<<<< Updated upstream
   | true -> [(x, y); (x+1, y); (x+2,y); (x+3, y)]
   | false -> [(x, y); (x, y+1); (x,y+2); (x, y+3)]
+=======
+  | true -> [(x, y); (x+1, y); (x+2,y); (x+3,y)]
+  | false -> [(x, y); (x, y+1); (x,y+2); (x,y+3)]
+>>>>>>> Stashed changes
 
 (**[dot (x,y) bool] is a ship of size 1 starting at the 
    coordinate (x,y) with a vertical orientation if [bool] is true. Horizontal
