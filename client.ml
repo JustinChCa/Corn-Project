@@ -26,13 +26,6 @@ let one_computer_connection () =
                                      k.h_addr_list.(0)) 8080
   | exception Not_found -> failwith "Could not find localhost."
 
-
-
-(**[shutdown_connection inchan] shutsdown the connection to the server on the
-   in_channel [inchan].  *)
-let shutdown_connection inchan =
-  Unix.shutdown (Unix.descr_of_in_channel inchan) Unix.SHUTDOWN_SEND 
-
 (**[parse_attack_string r] parses the attack string sent from the server
    into a client side readable format. *)
 let parse_attack_string r = 
@@ -40,42 +33,42 @@ let parse_attack_string r =
     (fun x -> if x= "" then false else true) 
   |> List.tl |> List.hd 
 
-(**[parse_create_player r bool ic oc] creates a copy of the enemy player's 
-   board using the given string [r] if [bool] is false. If [bool] is true, 
-   then it creates the current client's player using the in_channel [ic] 
-   and the out_channel [oc] *)
-let parse_create_player r bool ic oc= 
+(**[parse_create_player r bool in_channel out_channel] creates a copy of 
+   the enemy player's board using the given string [r] if [bool] is false. 
+   If [bool] is true, then it creates the current client's player using the 
+   in_channel [in_channel] and the out_channel [out_channel] *)
+let parse_create_player r bool in_channel out_channel= 
   if bool = false then 
     let args = String.split_on_char ' ' r |> List.tl in 
     enemy := ClientEngine.create_enemy_player 10 Main.ship_list args
   else 
     myself := ClientEngine.create_client_player 
-        10 Main.ship_list oc 
+        10 Main.ship_list out_channel 
 
 
-(**[gamestate_update ic oc r] parses the command sent from the server [r] and 
-   appropriately updates the game state on the in channel [ic] and out channel
-   [oc] depending upon the command. *)
-let gamestate_update ic oc r=
+(**[gamestate_update in_channel out_channel r] parses the command sent 
+   from the server [r] and  updates the game state on the in channel 
+   [in_channel] and out channel [out_channel] depending upon the command. *)
+let gamestate_update in_channel out_channel r=
   match String.split_on_char ' ' r |> List.hd with 
-  | "initialize" -> parse_create_player r true ic oc
-  | "attack" -> hit_handler_outbound !myself !enemy oc
+  | "initialize" -> parse_create_player r true in_channel out_channel
+  | "attack" -> hit_handler_outbound !myself !enemy out_channel
   | "attacked" -> hit_handler_inbound !myself !enemy (parse_attack_string r)
   | "winner" -> fail_condition ();
   | "lobby-1" -> lobby true;
   | "lobby-2" -> lobby false;
-  | "create-enemy" -> parse_create_player r false ic oc
+  | "create-enemy" -> parse_create_player r false in_channel out_channel
   | _ -> failwith "Invariant violated" 
 
-(**[controller ic oc] listens for server commands issued to the client on the
-   server in channel [ic] and responds appropriately to the server commands
-   on the out channel [oc]. *)
-let controller ic oc = 
+(**[controller in_channel out_channel] listens for server commands issued to 
+   the client on the server in channel [in_channel] and responds appropriately 
+   to the server commands on the out channel [out_channel]. *)
+let controller in_channel out_channel = 
   while true do
-    match String.trim (input_line ic) with
-    | t -> gamestate_update ic oc t
-    | exception j -> (** shutdown_connection ic; *)
-      close_in ic;
+    match String.trim (input_line in_channel) with
+    | t -> gamestate_update in_channel out_channel t
+    | exception j -> 
+      close_in in_channel;
       print_endline "You have lost connection to the server."; exit 0
   done
 
@@ -84,9 +77,8 @@ let controller ic oc =
 let rec connect () =
   try 
     match one_computer_connection () |> open_connection with  
-    | ic, oc -> controller ic oc ;
-      (** shutdown_connection ic; *)
-      close_in ic
+    | in_channel, out_channel -> controller in_channel out_channel ;
+      close_in in_channel
   with 
     End_of_file -> print_endline "You quit"; exit 0;
   | Unix_error (ENOTCONN,_,_) -> print_endline "Lost Connection"; exit 0

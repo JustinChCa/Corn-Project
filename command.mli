@@ -18,3 +18,8 @@ val find_coords: string -> (int*int)
    Example: "v" -> true, "vertical" -> true
    Raises: Invalid_argument if [str] is not a valid orientation. *)
 val orientation: string -> bool
+
+(**[convert_coordinate (a,b)] is the string representation of the tuple int
+   coordinate [(a,b)].
+   Example: (1,2) -> "b3" *)
+val convert_coordinate: int * int -> string

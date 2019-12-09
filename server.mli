@@ -1,3 +1,6 @@
+(**Represents an in_channel and an out_channel *)
+type socket
+
 (**Player representation in the server module *)
 type player
 
@@ -29,7 +32,7 @@ val issue_command: unit -> string
 
 (**[create_player_connn socc] is a record of a player type when given 
    a socket address [socc]. *)
-val create_player_conn: Unix.file_descr -> player
+val create_player_conn: Unix.file_descr -> string -> player
 
 (**[establish_connections sock_addr] waits until two players have joined
     the server with the socket address [sock_addr]. Records the in_channel and
