@@ -16,8 +16,15 @@ module type ai = sig
 
   type t
 
-  (** [ai_init d board] creates the ai corresponding to the difficulty [d] and
-      the board [board]*)
+  (** [ai_init d board] creates an ai with the difficulty [d] with the board
+      [board]. References the difficulty to determine what kind of avail to 
+      initialize. The lower two difficulties will use the entire board for
+      avail. The higher two difficulties will use a minimized checkerboard
+      section of the board as avail.     
+      1 is dumb
+      2 is normal
+      3 is smart
+      4 is expert *)
   val ai_init: int -> BoardMaker.t -> BoardMaker.t -> ShipMaker.t list-> t
 
   (** [hit ai int] calls the ai to play a turn. The ai's action is determined
@@ -33,6 +40,10 @@ module type ai = sig
 
   (** [alive ai] is true iff at least one of ai's ships is alive.*)
   val alive: t -> bool
+
+  (** TO SPECIFY TO SPECIFY TO SPECIFY TO SPECIFY !!!!!!!!!!!!!!!!!!!!!!!!!!!!*)
+  val ai_create_ship: (int * int -> bool -> (int * int) list) ->
+    'a -> Board.BoardMaker.t -> Ship.ShipMaker.t
 end
 
 module AiMaker : ai 

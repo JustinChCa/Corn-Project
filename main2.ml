@@ -3,6 +3,7 @@ open Graphics
 open Player
 open Ship
 open Board
+open Command
 open Ai
 
 
