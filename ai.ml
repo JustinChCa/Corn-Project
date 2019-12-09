@@ -205,31 +205,31 @@ module AiMaker = struct
   let find_coor_hit ai : (int*int) * (int*int) list  =
     match ai.current with 
     | (r,c)::[] -> begin
-        if not (List.mem (r-1,c) ai.missed) && (r-1 > 0) then 
+        if not (List.mem (r-1,c) ai.missed) && (r-1 >= 0) then 
           remove_coor ai.avail (r-1,c) [] else 
         if not (List.mem (r,c+1) ai.missed) 
-        && (c+1 < BoardMaker.columns ai.b -1) then 
+        && (c+1 <= BoardMaker.columns ai.b -1) then 
           remove_coor ai.avail (r,c+1) [] else 
         if not (List.mem (r+1,c) ai.missed) && 
-           (r+1 < BoardMaker.rows ai.b -1) then 
+           (r+1 <= BoardMaker.rows ai.b -1) then 
           remove_coor ai.avail (r+1,c) [] else 
-        if not (List.mem (r, c-1) ai.missed) && (c-1 > 0) then 
+        if not (List.mem (r, c-1) ai.missed) && (c-1 >= 0) then 
           remove_coor ai.avail (r,c-1) []
         else failwith "isolated one ship"
       end
     | _ -> match find_orientation ai.current with 
       | ( (ri, ci), (rf, cf), b ) -> begin
           if b = true then 
-            if not(List.mem (ri-1,ci) ai.missed) && (ri-1 > 0) then 
+            if not(List.mem (ri-1,ci) ai.missed) && (ri-1 >= 0) then 
               remove_coor ai.avail (ri-1,ci) [] else 
             if not(List.mem (rf+1,cf) ai.missed) 
-            && (rf+1 < BoardMaker.rows ai.b -1) then
+            && (rf+1 <= BoardMaker.rows ai.b -1) then
               remove_coor ai.avail (rf+1,cf) [] else failwith "wtf 1"
           else 
-          if not(List.mem (ri,ci-1) ai.missed) && (ci-1 > 0) then
+          if not(List.mem (ri,ci-1) ai.missed) && (ci-1 >= 0) then
             remove_coor ai.avail (ri,ci-1) [] else
           if not(List.mem (rf,cf+1) ai.missed) 
-          && (cf+1 < BoardMaker.columns ai.b -1)then
+          && (cf+1 <= BoardMaker.columns ai.b -1)then
             remove_coor ai.avail (rf,cf+1) [] else failwith "wtf 2"
         end
 
