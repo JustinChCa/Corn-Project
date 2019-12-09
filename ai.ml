@@ -11,6 +11,8 @@ module type ai = sig
   val get_board: t -> BoardMaker.t 
   val get_ships: t -> ShipMaker.t list
   val alive: t -> bool
+  val ai_create_ship: (int * int -> bool -> (int * int) list) ->
+    'a -> Board.BoardMaker.t -> Ship.ShipMaker.t
 end
 
 module AiMaker = struct

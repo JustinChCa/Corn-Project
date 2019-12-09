@@ -15,7 +15,7 @@ let read_txt txt =
     | exception End_of_file -> close_in txt; "\n" in
   t_help txt
 
-let title = read_txt (open_in "bs.txt")
+let title = read_txt (open_in ("assets"^ Filename.dir_sep ^"bs.txt"))
 
 (**[switch ()] clears the terminal and prompts the user to press 
    'Enter' once the players have switched. *)
@@ -157,7 +157,9 @@ let rec get_size () =
     false otherwise.*)
 let rec choose_gamemode () = 
   match read_line (a_endline "Choose Gamemode: Local Multiplayer or AI") with
+  | "Local Multiplayer"
   | "local multiplayer" -> true
+  | "ai"
   | "AI" -> false
   | _ -> a_endline "Not a valid option"; choose_gamemode ()
 
@@ -170,7 +172,6 @@ let rec ai_turn (p1,ai_player,ai) =
   print_double (PlayerMaker.get_board p1) (PlayerMaker.get_board ai_player); 
 
   Ai.AiMaker.hit ai (ShipMaker.get_largest (PlayerMaker.get_ships p1) 0);
-  print_double (PlayerMaker.get_board p1) (PlayerMaker.get_board ai_player); 
   ignore (read_line (a_endline "Enter to continue.")); 
   if not (PlayerMaker.alive ai_player) then 
     a_endline (PlayerMaker.get_name p1 ^ " wins.")
@@ -184,15 +185,17 @@ let rec ai_turn (p1,ai_player,ai) =
 let ai_initializer size diff= 
   let p1 = create_player size ship_list in 
   let ai_board = BoardMaker.create size size in
-  let ai_player = PlayerMaker.create [] ai_board "AI" in 
-  let ai = Ai.AiMaker.ai_init diff ai_board in 
+  let ai_ships = place_ships ai_board ship_list Ai.AiMaker.ai_create_ship in 
+  let ai = Ai.AiMaker.ai_init diff 
+      (PlayerMaker.get_board p1) ai_board ai_ships in 
+  let ai_player = PlayerMaker.create ai_ships ai_board "AI" in 
   p1, ai_player, ai
 
 (**[prompt_ai_difficulty ()] is the integer which corresponds to the AI 
    difficulty that the player has chosen. *)
 let rec prompt_ai_difficulty () = 
   match read_int (a_endline "Choose difficulty:
-   0 - Easy, 1- Medium, 2- Hard, 3- Expert") with 
+   1 - Dumb, 2- Normal, 3- Smart, 4- Expert") with 
   | k when k < 5 && k >= 0-> k
   | _ -> a_endline "Please type an appropriate int"; prompt_ai_difficulty ()
 
