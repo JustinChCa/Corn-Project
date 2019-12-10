@@ -57,6 +57,15 @@ let draw_swap () =
   draw_image g 0 0;
   ignore (wait_next_event [Key_pressed])
 
+let rec endscreen () = 
+  Graphics.set_font "-*-fixed-medium-r-semicondensed--50-*-*-*-*-*-iso8859-1";
+  moveto 324 100;
+  draw_string "Press m to go back to main menu or q to quit";
+  match (wait_next_event [Key_pressed]).key with
+  | 'q' -> raise Exit
+  | 'm' -> ()
+  | _ -> endscreen ()
+
 let draw_victory name =
   let img = Png.load "assets/victory.png" [] in
   let g = Graphic_image.of_image img in
@@ -67,7 +76,8 @@ let draw_victory name =
   moveto (400-x/2) 375; 
   draw_string name;
   moveto 324 250;
-  draw_string "WINS"
+  draw_string "WINS";
+  endscreen ()
 
 let draw_defeat name =
   let img = Png.load "assets/defeat.png" [] in
@@ -79,7 +89,8 @@ let draw_defeat name =
   moveto (400-x/2) 375; 
   draw_string name;
   moveto 305 250;
-  draw_string "LOSES"
+  draw_string "LOSES";
+  endscreen ()
 
 let draw_start () =
   open_graph " 800x570";

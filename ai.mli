@@ -42,8 +42,7 @@ module type ai = sig
   val alive: t -> bool
 
   (** TO SPECIFY TO SPECIFY TO SPECIFY TO SPECIFY !!!!!!!!!!!!!!!!!!!!!!!!!!!!*)
-  val ai_create_ship: (int * int -> bool -> (int * int) list) ->
-    'a -> Board.BoardMaker.t -> Ship.ShipMaker.t
+  val ai_create_ship: (int * int) list -> Board.BoardMaker.t -> Ship.ShipMaker.t
 end
 
 module AiMaker : ai 

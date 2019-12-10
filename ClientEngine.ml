@@ -27,7 +27,7 @@ let rec hit_controller player enemy print arg=
       let _ = print_boards player enemy print in 
       let rdln = if print = true then read_line () else arg in
       ignore (Sys.command "clear");
-      PlayerMaker.hit enemy (Command.find_coords rdln); 
+      ignore (PlayerMaker.hit enemy (Command.find_coords rdln)); 
       rdln
     end 
   with
@@ -72,7 +72,7 @@ let hit_handler_inbound player enemy arg =
 (**[create_client_ship] creates a ship [f] and places it on the board [board] 
    with name [name] given a coordinate and the orientation from the user when
    prompted. *)
-let rec create_client_ship f name board=
+let rec create_client_ship ship name board=
   ignore (Sys.command "clear");
   print_endline ("Place " ^ name);
   print_board (board);
@@ -82,7 +82,7 @@ let rec create_client_ship f name board=
   try 
     if List.length lst <> 2 then failwith "Invalid arg num" 
     else
-      let ship_constructed = create_general_ship f name board (List.hd lst) 
+      let ship_constructed = cs_helper ship board (List.hd lst) 
           (List.hd (List.tl lst))
       in ship_constructed,rdln
 
@@ -91,21 +91,21 @@ let rec create_client_ship f name board=
   | Invalid_argument s  
   | Taken s -> 
     ignore (read_line (a_endline (s ^ "\nPress Enter to try again.")));
-    create_client_ship f name board
+    create_client_ship ship name board
   | _ -> ignore (read_line (a_endline ("Incorrect number of arguments. 
   Make sure it's in the form 'coordinate orientation'  
   \nPress Enter to try again.")));
-    create_client_ship f name board
+    create_client_ship ship name board
 
 
 (**[place_enemy_ships board ships args] places down all the ships in [ship] on
    the board [board] using the coordinates in [args] *)
 let rec place_enemy_ships board ships args =
   match ships, args with 
-  | [],_ -> []
-  | (f,name)::t, h::j::k -> create_general_ship f name board h j::
-                            place_enemy_ships board t k
-  | _ -> failwith "Env "
+  | [], [] -> []
+  | (ship,name)::t, h::j::k -> cs_helper ship board h j::
+                               place_enemy_ships board t k
+  | _, _ -> failwith "not possible"
 
 
 let create_enemy_player size ships args = 
@@ -116,7 +116,7 @@ let create_enemy_player size ships args =
 
 let create_client_player size ships oc= 
   let board = BoardMaker.create size size in
-  let ships_tups = place_ships board ships create_client_ship in 
+  let ships_tups = List.map (fun (s,n) -> create_client_ship s n board) ships in 
   let args = List.fold_left (fun accum x -> match x with | (h,t) ->
       accum ^ t ^" ") "" ships_tups in 
   let real_ships = List.fold_left (fun accum x -> match x with | (h,t) -> 

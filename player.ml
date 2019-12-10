@@ -49,7 +49,6 @@ module PlayerMaker = struct
   let get_name t = t.name
 
   let hit enemy coor = (**true - prints, false - doesn't print *)
-    let print_bool = if enemy.name ="AI" then true else false in
-    BoardMaker.hit (enemy.board) coor print_bool
+    BoardMaker.hit (enemy.board) coor
 end 
 

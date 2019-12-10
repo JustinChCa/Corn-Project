@@ -15,11 +15,7 @@ let read_txt txt =
     | exception End_of_file -> close_in txt; "\n" in
   t_help txt
 
-<<<<<<< HEAD
-let title = read_txt (open_in "assets/bs.txt")
-=======
 let title = read_txt (open_in ("assets"^ Filename.dir_sep ^"bs.txt"))
->>>>>>> 50dda88c8ddb5e7d5cafae83b4544191b66bcec0
 
 (**[switch ()] clears the terminal and prompts the user to press 
    'Enter' once the players have switched. *)
@@ -29,29 +25,11 @@ let switch () =
 
 (* true is vertical and false is horizonta*)
 
-(**[normal_ship (x,y) bool] is a ship of size 2 starting at the 
-   coordinate (x,y) with a vertical orientation if [bool] is true. Horizontal
-   if [bool] is false. *)
-let normal_ship (x, y) = function
-  | true -> [(x, y); (x+1, y); (x+2,y)]
-  | false -> [(x, y); (x, y+1); (x,y+2)]
+let normal_ship = ([(0,0);(0,1);(0,2)], "normal ship")
+let square_ship = ([(0,0);(0,1);(1,0);(1,1)], "square ship")
+let l_ship = ([(0,0);(0,1);(0,2);(1,2)], "square ship")
 
-(**[l_ship (x,y) bool] is a ship of size 3 starting at the 
-   coordinate (x,y) with a vertical orientation if [bool] is true. Horizontal
-   if [bool] is false. *)
-let l_ship (x,y) = function
-  | true -> [(x, y); (x+1, y); (x+2,y); (x+3,y)]
-  | false -> [(x, y); (x, y+1); (x,y+2); (x,y+3)]
-
-(**[dot (x,y) bool] is a ship of size 1 starting at the 
-   coordinate (x,y) with a vertical orientation if [bool] is true. Horizontal
-   if [bool] is false. *)
-let dot (x,y) = function
-  | true -> [(x,y); (x+1, y)]
-  | false -> [(x,y); (x, y+1)]
-
-let ship_list = [(dot, "2 length ship"); (normal_ship, "3 length ship"); 
-                 (l_ship, "destroyer ship")]
+let ship_list = [normal_ship; square_ship; l_ship]
 
 (**[combine l1 l2] is the board string representation given the tiles [l1] and 
    tiles [l2].*)
@@ -78,7 +56,7 @@ let rec hit player enemy =
   a_endline (PlayerMaker.get_name player ^ 
              "'s Turn.\nEnter target coordinates");
   try 
-    match PlayerMaker.hit enemy (Command.find_coords (read_line ())) with
+    match PlayerMaker.hit enemy (find_coords (read_line ())) with
     | true -> a_endline "You hit."
     | false -> a_endline "You missed."
   with
@@ -89,33 +67,26 @@ let rec hit player enemy =
     ignore (read_line (a_endline (s ^ "\nPress Enter to try again.")));
     hit player enemy
 
-let rec create_general_ship f name board coord orient=
-  f (Command.find_coords coord) (Command.orientation orient)
+let cs_helper ship board coord orient=
+  ShipMaker.ship_pos ship (find_coords coord) (orientation orient)
   |> BoardMaker.taken board 
   |> ShipMaker.create 
   |> BoardMaker.place_ship board
 
-let rec create_ship f name board=
+let rec create_ship (ship, name) board=
   ignore (Sys.command "clear");
   a_endline ("Place " ^ name);
   print_board (board);
   try 
-    f (Command.find_coords (read_line (a_endline "Enter coordinates:"))) 
-      (Command.orientation (read_line (a_endline "Enter orientation:")))
-    |> BoardMaker.taken board 
-    |> ShipMaker.create  
-    |> BoardMaker.place_ship board 
+    let coord = read_line (a_endline "Enter coordinates:") in
+    let orient = read_line (a_endline "Enter orientation:") in
+    cs_helper ship board coord orient
   with
   | BadCoord s 
   | Invalid_argument s  
   | Taken s -> 
     ignore (read_line (a_endline (s ^ "\nPress Enter to try again.")));
-    create_ship f name board
-
-let rec place_ships board ships func =
-  match ships with 
-  | [] -> []
-  | (f, name)::t -> func f name board::place_ships board t func
+    create_ship (ship, name) board
 
 (**[create_player size ships] creates a player with a board size of [size] and 
    ships [ships] on the board. *)
@@ -124,7 +95,7 @@ let create_player size ships=
   a_endline title;
   let name = read_line (a_endline "Enter name for Player: ") in
   let board = BoardMaker.create size size in
-  let ships = place_ships board ships create_ship in 
+  let ships = List.map (fun sn -> create_ship sn board) ships in
   ignore (Sys.command "clear");
   print_board board;
   ignore (read_line (a_endline "This is your board, press enter to continue."));
@@ -158,8 +129,6 @@ let rec get_size () =
      ignore (read_line (a_endline "Enter to continue.")); get_size ())
 
 
-
-
 (**[choose_gamemode ()] allows the user to choose if they want to play
    local multiplayer or play against AI. true if local multiplayer,
     false otherwise.*)
@@ -188,18 +157,16 @@ let rec ai_turn (p1,ai_player,ai) =
   else 
     ai_turn (p1, ai_player,ai)
 
-
-
 (**[ai_initializer size] is a three element tuple that contains the created AI
    with board size [board], the AI Player type, and also the player created by 
    asking the player to place down their ships with a board size of [size].*)
-let ai_initializer size diff= 
-  let p1 = create_player size ship_list in 
-  let ai_board = BoardMaker.create size size in
-  let ai_ships = place_ships ai_board ship_list Ai.AiMaker.ai_create_ship in 
+let ai_initializer size ships diff= 
+  let p1 = create_player size ships in 
+  let board = BoardMaker.create size size in
+  let ships = List.map (fun (s,n) -> AiMaker.ai_create_ship s board) ships in 
   let ai = Ai.AiMaker.ai_init diff 
-      (PlayerMaker.get_board p1) ai_board ai_ships in 
-  let ai_player = PlayerMaker.create ai_ships ai_board "AI" in 
+      (PlayerMaker.get_board p1) board ships in 
+  let ai_player = PlayerMaker.create ships board "AI" in 
   p1, ai_player, ai
 
 (**[prompt_ai_difficulty ()] is the integer which corresponds to the AI 
@@ -219,7 +186,7 @@ let main () =
     and p2 = switch (); create_player size ship_list in
     turn (p1, p2)
   else 
-    prompt_ai_difficulty () |> ai_initializer size |> ai_turn 
+    prompt_ai_difficulty () |> ai_initializer size ship_list |> ai_turn 
 
 let _ = main ()
 

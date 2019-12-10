@@ -1,4 +1,4 @@
-MODULES=ship board authors command player main main2 gui client ClientEngine server engine ai
+MODULES=authors ship board gui player command ai client ClientEngine server engine main main2
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)

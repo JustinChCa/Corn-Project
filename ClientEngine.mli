@@ -1,15 +1,13 @@
 (**[create_enemy_player size ships args] creates an enemy player with a board 
    size of [size] and a ships list of [ships] at coordinate positions [args] *)
-val create_enemy_player: int -> 
-  ((int * int -> bool -> (int * int) list) * string) list -> string list 
-  -> Player.PlayerMaker.t
+val create_enemy_player: int -> ((int * int) list * 'a) list -> string list -> 
+  Player.PlayerMaker.t
 
 (**[create_client_player size ships ic oc] creates the client's player using a
    board size of [size] with a list of ships [ships]. The client's ships 
    arragnements are then transmitted to the server on the out channel [oc]*)
-val create_client_player: int -> 
-  ((int * int -> bool -> (int * int) list) * string) list -> out_channel
-  -> Player.PlayerMaker.t
+val create_client_player: int -> ((int * int) list * string) list -> 
+  out_channel -> Player.PlayerMaker.t
 
 (**[hit_handler_outbound player enemy oc] lets the current player [player] 
    attack the enemy player enemy. Outputs the coordinate that the player

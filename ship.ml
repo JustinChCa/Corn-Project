@@ -9,6 +9,7 @@ module type Ship = sig
   val coordinates : t -> (int * int) list
   val health: t -> int
   val get_largest: t list -> int -> int 
+  val ship_pos: (int * int) list -> (int * int) -> bool -> (int * int) list
 end
 
 exception Hitted of string
@@ -29,7 +30,7 @@ module ShipMaker = struct
     | true -> print_endline "You Hit."
     | false -> ()
 
-  let rec hit coor ship bool=
+  let rec hit coor ship =
     let rec hit_helper = function
       | [] -> failwith "Empty List Failure."
       | (c, b)::t -> 
@@ -69,5 +70,10 @@ module ShipMaker = struct
         if size h > int then get_largest t (size h) else get_largest t int
       else get_largest t int
 
+  let ship_pos ship (y, x) orient =
+    (match orient with 
+     | true -> ship
+     | false -> List.map (fun (a,b) -> (b,a)) ship)
+    |> List.map (fun (a, b) -> (a+y, b+x)) 
 end
 
