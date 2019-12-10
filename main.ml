@@ -15,7 +15,7 @@ let read_txt txt =
     | exception End_of_file -> close_in txt; "\n" in
   t_help txt
 
-let title = read_txt (open_in "bs.txt")
+let title = read_txt (open_in "assets/bs.txt")
 
 (**[switch ()] clears the terminal and prompts the user to press 
    'Enter' once the players have switched. *)
@@ -73,7 +73,11 @@ let rec hit player enemy =
   print_double (PlayerMaker.get_board player) (PlayerMaker.get_board enemy); 
   a_endline (PlayerMaker.get_name player ^ 
              "'s Turn.\nEnter target coordinates");
-  try PlayerMaker.hit enemy (Command.find_coords (read_line ())) with
+  try 
+    match PlayerMaker.hit enemy (Command.find_coords (read_line ())) with
+    | true -> a_endline "You hit."
+    | false -> a_endline "You missed."
+  with
   | BadCoord s 
   | Missed s
   | Invalid_argument s
@@ -207,7 +211,7 @@ let main () =
   else 
     prompt_ai_difficulty () |> ai_initializer size |> ai_turn 
 
-
+let _ = main ()
 
 
 

@@ -5,7 +5,7 @@ module type Board = sig
   type tile = Miss | Water of ShipMaker.t option
   type t 
   val create: int -> int -> t
-  val hit: t -> int*int -> unit
+  val hit: t -> int * int -> bool
   val str_board: t -> bool -> string list
   val to_list: t -> bool -> string list list
   val columns: t -> int
@@ -27,7 +27,7 @@ module BoardMaker = struct
 
   let hit board (y, x) = 
     match board.(y).(x) with
-    | Water (None) -> print_endline "You missed"; board.(y).(x) <- Miss
+    | Water (None) -> board.(y).(x) <- Miss; false
     | Miss -> raise (Missed ("You have already missed this spot."))
     | Water (Some j) -> ShipMaker.hit (y, x) j
 

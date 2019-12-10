@@ -3,116 +3,139 @@ open Graphics
 open Player
 open Ship
 open Board
-open Ai
 
 
-let normal_ship (y, x) = function
-  | true -> [(y,x);(y, x+1); (y, x+2)]
-  | false -> [(y,x);(y+1,x);(y+2,x)]
+(* (y,x)*)
+let normal_ship = ([(0,0);(0,1);(0,2)], "normal ship")
+let square_ship = ([(0,0);(0,1);(1,0);(1,1)], "square ship")
 
-let ship_list = [(normal_ship, "normal")]
+let ship_list = [normal_ship; square_ship]
+
+let ship_pos ship (y, x) orient =
+  (match orient with 
+   | true -> ship
+   | false -> List.map (fun (a,b) -> (b,a)) ship)
+  |> List.map (fun (a, b) -> (a+y, b+x)) 
+
+let enter_string x y line ts limit =
+  let rec build x =
+    if x < limit then
+      match read_key () with
+      | '\r' -> ""
+      | s -> draw_char s; Char.escaped s ^ build (x+1) 
+    else "" in
+
+  set_font 
+    ("-*-fixed-medium-r-semicondensed--"^
+     string_of_int ts^ "-*-*-*-*-*-iso8859-1");
+  moveto x y;
+  draw_string line;
+  build 0
 
 let rec get_coord x y wsize bsize =
   ignore (wait_next_event [Button_down]);
   match mouse_pos () with
-  | (a, b) when a-x >= 0 && b-y >= 0 -> 
-    ((bsize - ((b-y) * bsize)/wsize) - 1 ,((a-x) * bsize)/wsize)
+  | (a, b) when a-x > 0 && a-x < wsize && b-y > 0 && b-y < wsize ->
+    print_int(b);
+    bsize - ((b-y) * bsize/wsize) - 1, (a-x) * bsize/wsize
   | _ -> get_coord x y wsize bsize
 
-let enter_string x y line ts limit =
-  (let rec build x =
-     if x < limit then
-       match read_key () with
-       | '\r' -> ""
-       | s -> draw_char s; Char.escaped s ^ build (x+1) 
-     else "" in
+let rec get_ori () = 
+  match read_key () with
+  | 'h' -> true
+  | 'v' -> false
+  | _ -> get_ori () 
 
-   set_text_size 100;
-   moveto x y;
-   draw_string line;
-   build 0)
+let rec get_size () = 
+  draw_background ();
+  match int_of_string (enter_string 25 700 "Enter size (10-26): " 40 2) with
+  | i when i > 9 && i < 27 -> i
+  | i -> get_size ()
+  | exception Failure s -> get_size ()
 
-let create_general_ship f name board coord orient =
-  f coord orient
+let continue x y line =
+  ignore (enter_string x y line 40 0);
+  ignore (wait_next_event [Key_pressed])
+
+let cs_helper ship board coor orient =
+  ship_pos ship coor orient
   |> BoardMaker.taken board
   |> ShipMaker.create 
   |> BoardMaker.place_ship board
 
-let rec create_ship f name board x y wsize bsize =
-  let rec orientation () = 
-    match read_key () with
-    | 'h' -> true
-    | 'v' -> false
-    | _ -> orientation () in
+let rec create_ship (ship, name) board x y wsize bsize =
   draw_background ();
   draw_board board true x y wsize;
-  ignore (enter_string 25 700 ("Click a spot to to place " ^ name) 30 0);
+  ignore (enter_string 25 700 ("Click a spot to to place " ^ name) 40 0);
   let coord = get_coord x y wsize bsize in
   draw_background ();
   draw_board board true x y wsize;
-  ignore (enter_string 25 700 "'v' for vertical, 'h' for horizontal" 30 0);
-  let orient = orientation () in
-  create_general_ship f name board coord orient
+  ignore (enter_string 25 700 "'v' for vertical, 'h' for horizontal" 40 0);
+  let orient = get_ori () in
+  try cs_helper ship board coord orient with 
+  | Taken s -> continue 25 650 (s ^ " Press any key to continue.");
+    create_ship (ship, name) board x y wsize bsize
 
 let place_ships board ships x y wsize bsize =
-  List.map (fun (f, name) -> create_ship f name board x y wsize bsize) ships
+  List.map (fun sn -> create_ship sn board x y wsize bsize) ships
 
 let create_player nx ny bx by wsize bsize ships =
   let board = BoardMaker.create bsize bsize in
   draw_background ();
   draw_board board true bx by wsize;
-  let name = enter_string nx ny "Enter name: " 20 16 in 
+  let name = enter_string nx ny "Enter name: " 40 16 in 
   draw_background ();
   draw_board board true bx by wsize;
   let slist = place_ships board ships bx by wsize bsize in
   draw_background ();
   draw_board board true bx by wsize;
-  ignore (wait_next_event [Key_pressed]);
+  continue 25 700 "This is your board, press any key to continue.";
   PlayerMaker.create slist board name
 
 let rec hit player enemy x1 y1 x2 y2 size1 size2 bsize= 
   draw_background ();
   draw_field (PlayerMaker.get_board player) (PlayerMaker.get_board enemy) 
     x1 y1 x2 y2 size1 size2;
-  ignore (enter_string 25 700 ("Click a spot to to hit.") 30 0);
+  ignore (enter_string 25 700 ((PlayerMaker.get_name player) 
+                               ^ "'s turn. Click a spot to to hit.") 40 0);
   let coord = get_coord x2 y2 size2 bsize in
-  try PlayerMaker.hit enemy coord with
-  | BadCoord s 
+  try 
+    let s = match PlayerMaker.hit enemy coord with
+      | true -> "You hit. Press any key to continue."
+      | false -> "You missed. Press any key to continue." in
+    draw_background ();
+    draw_field (PlayerMaker.get_board player) (PlayerMaker.get_board enemy) 
+      x1 y1 x2 y2 size1 size2;
+    continue 25 700 s
+  with
   | Missed s
   | Invalid_argument s
   | Hitted s -> 
-    ignore (enter_string 25 650 (s ^ "\nPress any key to continue.") 30 0);
-    ignore (wait_next_event [Key_pressed]);
+    continue 25 650 (s ^ " Press any key to continue.");
     hit player enemy x1 y1 x2 y2 size1 size2 bsize
 
 let rec turn player enemy x1 y1 x2 y2 size1 size2 bsize=
   hit player enemy x1 y1 x2 y2 size1 size2 bsize;
-  draw_background ();
-  draw_field (PlayerMaker.get_board player) (PlayerMaker.get_board enemy) 
-    x1 y1 x2 y2 size1 size2;
   ignore (wait_next_event [Key_pressed]);
-  if not (PlayerMaker.alive enemy) then raise Exit else 
-    draw_swap (); turn enemy player x1 y1 x2 y2 size1 size2 bsize
-
-let rec get_size () = 
-  match int_of_string (enter_string 25 700 "Enter size (10-26): " 20 2) with
-  | i when i > 9 && i < 27 -> i
-  | i -> get_size ()
-  | exception Failure s -> get_size ()
+  if not (PlayerMaker.alive enemy) 
+  then 
+    player
+  else 
+    (draw_swap (); 
+     turn enemy player x1 y1 x2 y2 size1 size2 bsize)
 
 let local () = 
-  draw_background ();
   let size = get_size () in
   let player1 = create_player 25 700 475 25 800 size ship_list in
   draw_swap ();
   let player2 = create_player 25 700 475 25 800 size ship_list in 
   draw_swap ();
-  try turn player1 player2 25 25 475 25 400 800 size with
-  | Exit -> ()
+  turn player1 player2 25 25 475 25 400 800 size
 
 let rec mainmenu () = 
+  draw_main_menu ();
   match read_key () with
-  | 'w' -> local ()
+  | 'w' -> local () |> PlayerMaker.get_name |> draw_victory
   | 'a' -> failwith "not implemented"
   | 's' -> failwith "not implemented"
   | _ -> mainmenu ()
@@ -120,8 +143,9 @@ let rec mainmenu () =
 let main () = 
   try
     draw_start ();
-    draw_main_menu ();
-    mainmenu ();
-    close_graph ()
+    mainmenu ()
   with
+  | Exit -> close_graph ()
   | Graphic_failure s -> close_graph ()
+
+let _ = main ()

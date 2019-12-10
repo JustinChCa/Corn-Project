@@ -57,6 +57,30 @@ let draw_swap () =
   draw_image g 0 0;
   ignore (wait_next_event [Key_pressed])
 
+let draw_victory name =
+  let img = Png.load "assets/victory.png" [] in
+  let g = Graphic_image.of_image img in
+  resize_window 800 800;
+  draw_image g 0 0;
+  Graphics.set_font "-*-fixed-medium-r-semicondensed--80-*-*-*-*-*-iso8859-1";
+  let (x, y) = Graphics.text_size name in
+  moveto (400-x/2) 375; 
+  draw_string name;
+  moveto 324 250;
+  draw_string "WINS"
+
+let draw_defeat name =
+  let img = Png.load "assets/defeat.png" [] in
+  let g = Graphic_image.of_image img in
+  resize_window 800 800;
+  draw_image g 0 0;
+  Graphics.set_font "-*-fixed-medium-r-semicondensed--80-*-*-*-*-*-iso8859-1";
+  let (x, y) = Graphics.text_size name in
+  moveto (400-x/2) 375; 
+  draw_string name;
+  moveto 305 250;
+  draw_string "LOSES"
+
 let draw_start () =
   open_graph " 800x570";
   set_window_title "Battleship"

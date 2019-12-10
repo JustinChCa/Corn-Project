@@ -16,9 +16,10 @@ module type Ship = sig
   (** [create lst] creates a ship with the coordinate list [lst]*)
   val create : (int * int) list -> t
 
-  (** [hit coor s] is the ship [s] with the coordinate [coord] set to false.
+  (** [hit coor s] is true with the ship [s] with the coordinate [coord] 
+      set to false.
       Raises: [Hitted] if coordinate has already been hit. *)
-  val hit : int * int -> t -> unit
+  val hit : int * int -> t -> bool
 
   (** [calive coor s] is true iff [coor] hasn't been hit.*)
   val calive : int * int -> t -> bool

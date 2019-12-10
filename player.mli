@@ -24,7 +24,7 @@ module type Player = sig
   (**[get_board t] is the board of player [t] *)
   val get_board: t -> BoardMaker.t
 
-  val hit: t -> int * int -> unit
+  val hit: t -> int * int -> bool
 
 end
 

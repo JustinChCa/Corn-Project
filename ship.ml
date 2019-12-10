@@ -3,7 +3,7 @@ module type Ship = sig
   type t
   val size : t -> int
   val create : (int * int) list -> t
-  val hit : (int * int) -> t -> unit
+  val hit : (int * int) -> t -> bool
   val calive : (int * int) -> t -> bool
   val alive : t -> bool
   val coordinates : t -> (int * int) list
@@ -24,13 +24,13 @@ module ShipMaker = struct
 
   let rec hit coor ship =
     let rec hit_helper = function
-      | [] -> []
+      | [] -> failwith "Empty List Failure."
       | (c, b)::t -> 
         if c = coor then 
-          begin if b then (print_endline "You Hit."; (c, false)::t) 
-            else raise (Hitted "You have already hit this spot.") end
+          begin if b then (c, false)::t 
+            else raise (Hitted "This spot has already been hit") end
         else (c,b)::hit_helper t in
-    ship := hit_helper !ship
+    ship := hit_helper !ship; true
 
   let rec calive coor ship =
     let rec coor_helper = function
