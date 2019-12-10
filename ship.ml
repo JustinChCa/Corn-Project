@@ -22,7 +22,14 @@ module ShipMaker = struct
   let create coor =
     ref (List.map (fun a -> (a, true)) coor)
 
-  let rec hit coor ship =
+  (**[print_hit_msg bool] prints a hit message if [bool] is true, else does not
+     print out anything. *)
+  let print_hit_msg bool = 
+    match bool with 
+    | true -> print_endline "You Hit."
+    | false -> ()
+
+  let rec hit coor ship bool=
     let rec hit_helper = function
       | [] -> failwith "Empty List Failure."
       | (c, b)::t -> 

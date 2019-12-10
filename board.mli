@@ -20,9 +20,17 @@ module type Board = sig
       element in the matrix being [Water None]. *)
   val create : int -> int -> t
 
+<<<<<<< HEAD
   (** [hit board coord] is true iff the [coord] in [board] contains a [Ship]
       that has not been hit at [coord] yet.*)
   val hit: t -> int * int -> bool
+=======
+  (** [hit b pair bool] augments the board [b] based on an attack on the
+      coordinates [pair]. Returns a message that the player has already
+      attacked an area if [bool] is true and they input that coordinate; 
+      the player will not get another turn if they do. *)
+  val hit: t -> int * int -> bool -> unit
+>>>>>>> 50dda88c8ddb5e7d5cafae83b4544191b66bcec0
 
   (** [str_board board self] is [board] in string list form with each element
       representing a row, in player form iff self else enemy form.*)

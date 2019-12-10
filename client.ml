@@ -85,5 +85,4 @@ let rec connect () =
   |exn -> print_endline "Connection Refused; Make sure the server is running!
     Try again! "; exit 0
 
-let start= ignore (Sys.command "clear"); connect () 
-
+let start= ignore (Sys.command "clear"); connect ()

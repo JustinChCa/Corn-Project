@@ -36,11 +36,11 @@ let player2 = ref {player="p10"; socket={in_channel=Stdlib.stdin;
 let current_state = ref Initialize
 
 
-let create_player_conn socc name= 
+let create_player_conn socket name= 
   {player= name;
    socket=
-     {in_channel = in_channel_of_descr socc; 
-      out_channel = out_channel_of_descr socc}}
+     {in_channel = in_channel_of_descr socket; 
+      out_channel = out_channel_of_descr socket}}
 
 
 
@@ -67,10 +67,13 @@ let establish_connections sock_addr =
     match accept sock_addr |> fst |> assign_player with 
     | k when k=0 ->   
       output_string !player1.socket.out_channel "lobby-1\n"; 
-      flush !player1.socket.out_channel 
+      flush !player1.socket.out_channel ;
+      counter := !counter +1;
+
 
     | k when k=1-> output_string !player2.socket.out_channel "lobby-2\n"; 
-      flush !player2.socket.out_channel
+      flush !player2.socket.out_channel;       counter := !counter +1;
+
     | _ -> ignore(failwith "Invariant Violated! 2 Players Exceeded!");
 
       counter := !counter +1;
@@ -102,9 +105,11 @@ let game_service socc =
     print_endline ("player " ^ !player1.player ^"'s turn");
     control_state !player1.player !player1.socket.in_channel 
       !player1.socket.out_channel;
+
     print_endline ("player " ^ !player2.player ^"'s turn");
     control_state !player2.player !player2.socket.in_channel 
       !player2.socket.out_channel;
+
     current_state := Attack
   done
 
@@ -133,8 +138,8 @@ let configure_server () =
     | k -> k.h_addr_list.(0) 
     | exception Not_found -> failwith "Could not find localhost"
   in 
-  let dom = sock_dom get_serv_address port_number in 
-  let socket_addr = socket dom SOCK_STREAM 0 in 
+  let dom_of_sock = sock_dom get_serv_address port_number in 
+  let socket_addr = socket dom_of_sock SOCK_STREAM 0 in 
   {
     port_number = port_number;
     serv_addr = get_serv_address;
@@ -164,4 +169,4 @@ let run_server () =
       some time... (~1-2 mins max.)"; exit 0
 
 
-let start = run_server () 
+let start = run_server ()

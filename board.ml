@@ -29,7 +29,7 @@ module BoardMaker = struct
     match board.(y).(x) with
     | Water (None) -> board.(y).(x) <- Miss; false
     | Miss -> raise (Missed ("You have already missed this spot."))
-    | Water (Some j) -> ShipMaker.hit (y, x) j
+    | Water (Some j) -> ShipMaker.hit (y, x) j 
 
   let rec fold f arr i acc =
     match arr.(i) with

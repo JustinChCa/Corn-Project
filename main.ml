@@ -15,7 +15,11 @@ let read_txt txt =
     | exception End_of_file -> close_in txt; "\n" in
   t_help txt
 
+<<<<<<< HEAD
 let title = read_txt (open_in "assets/bs.txt")
+=======
+let title = read_txt (open_in ("assets"^ Filename.dir_sep ^"bs.txt"))
+>>>>>>> 50dda88c8ddb5e7d5cafae83b4544191b66bcec0
 
 (**[switch ()] clears the terminal and prompts the user to press 
    'Enter' once the players have switched. *)
@@ -36,8 +40,8 @@ let normal_ship (x, y) = function
    coordinate (x,y) with a vertical orientation if [bool] is true. Horizontal
    if [bool] is false. *)
 let l_ship (x,y) = function
-  | true -> [(x, y); (x+1, y); (x+2,y); (x+2, y+1)]
-  | false -> [(x, y); (x, y+1); (x,y+2); (x+1, y+2)]
+  | true -> [(x, y); (x+1, y); (x+2,y); (x+3,y)]
+  | false -> [(x, y); (x, y+1); (x,y+2); (x,y+3)]
 
 (**[dot (x,y) bool] is a ship of size 1 starting at the 
    coordinate (x,y) with a vertical orientation if [bool] is true. Horizontal
@@ -47,7 +51,7 @@ let dot (x,y) = function
   | false -> [(x,y); (x, y+1)]
 
 let ship_list = [(dot, "2 length ship"); (normal_ship, "3 length ship"); 
-                 (l_ship, "L ship")]
+                 (l_ship, "destroyer ship")]
 
 (**[combine l1 l2] is the board string representation given the tiles [l1] and 
    tiles [l2].*)
@@ -161,7 +165,9 @@ let rec get_size () =
     false otherwise.*)
 let rec choose_gamemode () = 
   match read_line (a_endline "Choose Gamemode: Local Multiplayer or AI") with
+  | "Local Multiplayer"
   | "local multiplayer" -> true
+  | "ai"
   | "AI" -> false
   | _ -> a_endline "Not a valid option"; choose_gamemode ()
 
@@ -174,12 +180,14 @@ let rec ai_turn (p1,ai_player,ai) =
   print_double (PlayerMaker.get_board p1) (PlayerMaker.get_board ai_player); 
 
   Ai.AiMaker.hit ai (ShipMaker.get_largest (PlayerMaker.get_ships p1) 0);
-  print_double (PlayerMaker.get_board p1) (PlayerMaker.get_board ai_player); 
   ignore (read_line (a_endline "Enter to continue.")); 
   if not (PlayerMaker.alive ai_player) then 
     a_endline (PlayerMaker.get_name p1 ^ " wins.")
-  else
+  else if not (PlayerMaker.alive p1) then
+    a_endline (PlayerMaker.get_name ai_player ^ " wins.")
+  else 
     ai_turn (p1, ai_player,ai)
+
 
 
 (**[ai_initializer size] is a three element tuple that contains the created AI
@@ -188,15 +196,17 @@ let rec ai_turn (p1,ai_player,ai) =
 let ai_initializer size diff= 
   let p1 = create_player size ship_list in 
   let ai_board = BoardMaker.create size size in
-  let ai_player = PlayerMaker.create [] ai_board "AI" in 
-  let ai = Ai.AiMaker.ai_init diff ai_board in 
+  let ai_ships = place_ships ai_board ship_list Ai.AiMaker.ai_create_ship in 
+  let ai = Ai.AiMaker.ai_init diff 
+      (PlayerMaker.get_board p1) ai_board ai_ships in 
+  let ai_player = PlayerMaker.create ai_ships ai_board "AI" in 
   p1, ai_player, ai
 
 (**[prompt_ai_difficulty ()] is the integer which corresponds to the AI 
    difficulty that the player has chosen. *)
 let rec prompt_ai_difficulty () = 
   match read_int (a_endline "Choose difficulty:
-   0 - Easy, 1- Medium, 2- Hard, 3- Expert") with 
+   1 - Dumb, 2- Normal, 3- Smart, 4- Expert") with 
   | k when k < 5 && k >= 0-> k
   | _ -> a_endline "Please type an appropriate int"; prompt_ai_difficulty ()
 
