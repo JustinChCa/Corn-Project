@@ -3,7 +3,7 @@ open Random
 open Board
 open Ship
 
-module type ai = sig
+module type Ai = sig
   (** AF: the type represents the difficulty of the ai with the list of 
       coordinates the ai has missed or sunk ships and the list of coordinates 
       attacked ships that have not sunk yet. 
@@ -45,4 +45,4 @@ module type ai = sig
   val ai_create_ship: (int * int) list -> Board.BoardMaker.t -> Ship.ShipMaker.t
 end
 
-module AiMaker : ai 
+module AiMaker : Ai 

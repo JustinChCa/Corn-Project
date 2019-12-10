@@ -233,30 +233,30 @@ module AiMaker = struct
   let find_coor_hit ai : (int*int) * (int*int) list  =
     match ai.current with 
     | (r,c)::[] -> begin
-        if not (List.mem (r-1,c) ai.missed) && (r-1 >= 0) then 
+        if not (List.mem (r-1,c) (ai.missed @ ai.aside)) && (r-1 >= 0) then 
           remove_coor ai.avail (r-1,c) [] else 
-        if not (List.mem (r,c+1) ai.missed) 
+        if not (List.mem (r,c+1) (ai.missed @ ai.aside)) 
         && (c+1 <= BoardMaker.columns ai.b -1) then 
           remove_coor ai.avail (r,c+1) [] else 
-        if not (List.mem (r+1,c) ai.missed) && 
+        if not (List.mem (r+1,c) (ai.missed @ ai.aside)) && 
            (r+1 <= BoardMaker.rows ai.b -1) then 
           remove_coor ai.avail (r+1,c) [] else 
-        if not (List.mem (r, c-1) ai.missed) && (c-1 >= 0) then 
+        if not (List.mem (r, c-1) (ai.missed @ ai.aside)) && (c-1 >= 0) then 
           remove_coor ai.avail (r,c-1) []
         else failwith "isolated one ship"
       end
     | _ -> match find_orientation ai.current with 
       | ( (ri, ci), (rf, cf), true ) -> begin
-          if not(List.mem (ri-1,ci) ai.missed) && (ri-1 >= 0) then 
+          if not(List.mem (ri-1,ci) (ai.missed @ ai.aside)) && (ri-1 >= 0) then 
             remove_coor ai.avail (ri-1,ci) [] else 
-          if not(List.mem (rf+1,cf) ai.missed) 
+          if not(List.mem (rf+1,cf) (ai.missed @ ai.aside)) 
           && (rf+1 <= BoardMaker.rows ai.b -1) then
             remove_coor ai.avail (rf+1,cf) [] else special_case ai false
         end
       | ( (ri, ci), (rf, cf), false ) -> begin
-          if not(List.mem (ri,ci-1) ai.missed) && (ci-1 >= 0) then
+          if not(List.mem (ri,ci-1) (ai.missed @ ai.aside)) && (ci-1 >= 0) then
             remove_coor ai.avail (ri,ci-1) [] else
-          if not(List.mem (rf,cf+1) ai.missed) 
+          if not(List.mem (rf,cf+1) (ai.missed @ ai.aside)) 
           && (cf+1 <= BoardMaker.columns ai.b -1)then
             remove_coor ai.avail (rf,cf+1) [] else special_case ai true
         end
@@ -346,6 +346,27 @@ module AiMaker = struct
           special_hit ai coorlst (int-1) (r,c'+1) false end
     end
 
+  let kill_ship ai coornewlst s = 
+    if (List.length ai.current) = (ShipMaker.size s) &&
+       (List.length ai.aside = 0) then begin
+      ai.missed <- ((fst coornewlst)::ai.current) @ ai.missed;
+      ai.current <- []; ignore (BoardMaker.hit ai.b (fst coornewlst))end 
+    else if (List.length ai.current) = (ShipMaker.size s) then begin
+      ai.missed <- ((fst coornewlst)::ai.current) @ ai.missed;
+      ai.current <- List.hd ai.aside::[]; ai.aside <- List.tl ai.aside;
+      ignore (BoardMaker.hit ai.b (fst coornewlst)) end else begin
+      match fst coornewlst with 
+      |(r,c) -> if List.mem (r-1,c) ai.current then
+          special_hit ai coornewlst (ShipMaker.size s) (r-1,c) false
+        else if List.mem (r+1,c) ai.current then
+          special_hit ai coornewlst (ShipMaker.size s) (r+1,c) false 
+        else if List.mem (r,c-1) ai.current then
+          special_hit ai coornewlst (ShipMaker.size s) (r,c-1) true 
+        else if List.mem (r,c+1) ai.current then
+          special_hit ai coornewlst (ShipMaker.size s) (r,c+1) true 
+        else failwith "special hit case failed"
+    end
+
   (** [hit ai int] calls the ai to play a turn determined by the difficulty of
       of the ai. [int] is the size of the largest enemy ship which must be
       positive.
@@ -372,26 +393,7 @@ module AiMaker = struct
         ignore (BoardMaker.hit ai.b (fst coornewlst))
       | Some s -> begin match ShipMaker.health s with 
           | 0 -> failwith "impossible, hitting sunken ship"
-          | 1 -> 
-            if (List.length ai.current) = (ShipMaker.size s) &&
-               (List.length ai.aside = 0) then begin
-              ai.missed <- ((fst coornewlst)::ai.current) @ ai.missed;
-              ai.current <- []; ignore (BoardMaker.hit ai.b (fst coornewlst))end 
-            else if (List.length ai.current) = (ShipMaker.size s) then begin
-              ai.missed <- ((fst coornewlst)::ai.current) @ ai.missed;
-              ai.current <- List.hd ai.aside::[]; ai.aside <- List.tl ai.aside;
-              ignore (BoardMaker.hit ai.b (fst coornewlst)) end else begin
-              match fst coornewlst with 
-              |(r,c) -> if List.mem (r-1,c) ai.current then
-                  special_hit ai coornewlst (ShipMaker.size s) (r-1,c) false
-                else if List.mem (r+1,c) ai.current then
-                  special_hit ai coornewlst (ShipMaker.size s) (r+1,c) false 
-                else if List.mem (r,c-1) ai.current then
-                  special_hit ai coornewlst (ShipMaker.size s) (r,c-1) true 
-                else if List.mem (r,c+1) ai.current then
-                  special_hit ai coornewlst (ShipMaker.size s) (r,c+1) true 
-                else failwith "special hit case failed"
-            end
+          | 1 -> kill_ship ai coornewlst s
           | _ -> ai.current <- (fst coornewlst):: ai.current;
             ignore (BoardMaker.hit ai.b (fst coornewlst))
         end
