@@ -188,7 +188,6 @@ let main () =
   else 
     prompt_ai_difficulty () |> ai_initializer size ship_list |> ai_turn 
 
-let _ = main ()
 
 
 
