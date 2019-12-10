@@ -3,11 +3,6 @@ open Graphics
 open Player
 open Ship
 open Board
-<<<<<<< HEAD
-=======
-open Command
-open Ai
->>>>>>> 50dda88c8ddb5e7d5cafae83b4544191b66bcec0
 
 
 (* (y,x)*)
@@ -150,13 +145,7 @@ let main () =
     draw_start ();
     mainmenu ()
   with
-<<<<<<< HEAD
   | Exit -> close_graph ()
   | Graphic_failure s -> close_graph ()
 
 let _ = main ()
-=======
-  | Graphic_failure s -> close_graph ()
-
-let () = main ()
->>>>>>> 50dda88c8ddb5e7d5cafae83b4544191b66bcec0
