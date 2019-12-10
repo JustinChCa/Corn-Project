@@ -67,10 +67,13 @@ let establish_connections sock_addr =
     match accept sock_addr |> fst |> assign_player with 
     | k when k=0 ->   
       output_string !player1.socket.out_channel "lobby-1\n"; 
-      flush !player1.socket.out_channel 
+      flush !player1.socket.out_channel ;
+      counter := !counter +1;
+
 
     | k when k=1-> output_string !player2.socket.out_channel "lobby-2\n"; 
-      flush !player2.socket.out_channel
+      flush !player2.socket.out_channel;       counter := !counter +1;
+
     | _ -> ignore(failwith "Invariant Violated! 2 Players Exceeded!");
 
       counter := !counter +1;
@@ -166,4 +169,4 @@ let run_server () =
       some time... (~1-2 mins max.)"; exit 0
 
 
-(*let start = run_server () *)
+let start = run_server ()

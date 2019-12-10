@@ -12,7 +12,7 @@ type server
 type state
 
 (**[start ()] launches the server on the computer of who called it *)
-(*val start: unit *)
+val start: unit
 
 (**[run_server ()] starts up the server with the hosts local ip address 
    and with a port of 8080.  *)

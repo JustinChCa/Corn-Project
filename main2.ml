@@ -126,3 +126,5 @@ let main () =
     close_graph ()
   with
   | Graphic_failure s -> close_graph ()
+
+let () = main ()

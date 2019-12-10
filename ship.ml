@@ -3,7 +3,7 @@ module type Ship = sig
   type t
   val size : t -> int
   val create : (int * int) list -> t
-  val hit : (int * int) -> t -> unit
+  val hit : (int * int) -> t -> bool -> unit
   val calive : (int * int) -> t -> bool
   val alive : t -> bool
   val coordinates : t -> (int * int) list
@@ -22,12 +22,19 @@ module ShipMaker = struct
   let create coor =
     ref (List.map (fun a -> (a, true)) coor)
 
-  let rec hit coor ship =
+  (**[print_hit_msg bool] prints a hit message if [bool] is true, else does not
+     print out anything. *)
+  let print_hit_msg bool = 
+    match bool with 
+    | true -> print_endline "You Hit."
+    | false -> ()
+
+  let rec hit coor ship bool=
     let rec hit_helper = function
       | [] -> []
       | (c, b)::t -> 
         if c = coor then 
-          begin if b then (print_endline "You Hit."; (c, false)::t) 
+          begin if b then (print_hit_msg bool; (c, false)::t) 
             else raise (Hitted "You have already hit this spot.") end
         else (c,b)::hit_helper t in
     ship := hit_helper !ship

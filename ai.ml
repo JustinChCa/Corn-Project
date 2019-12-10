@@ -268,7 +268,7 @@ module AiMaker = struct
     let coornewlst = find_coor_r ai.avail in
     ai.avail <- snd coornewlst;
     ai.missed <- (fst coornewlst):: ai.missed;
-    BoardMaker.hit ai.b (fst coornewlst)
+    BoardMaker.hit ai.b (fst coornewlst) false
 
   let pop_aside ai = {diff = ai.diff; missed = ai.missed;
                       current = ai.aside; aside = []; avail = ai.avail;
@@ -327,7 +327,7 @@ module AiMaker = struct
     |_ -> failwith "not a valid difficulty"
 
   let rec special_hit ai coorlst int coor bool= 
-    if int = 0 then BoardMaker.hit ai.b (fst coorlst) else begin
+    if int = 0 then BoardMaker.hit ai.b (fst coorlst) false else begin
       match fst coorlst, coor, bool with
       | (r,c), (r',c'), true -> if r' < r then begin
           ai.current <- snd (remove_coor ai.current (r',c') []);
@@ -370,18 +370,18 @@ module AiMaker = struct
       ai.avail <- snd coornewlst;
       match BoardMaker.get_coor ai.b (fst coornewlst) with
       | None -> ai.missed <- (fst coornewlst):: ai.missed;
-        BoardMaker.hit ai.b (fst coornewlst)
+        BoardMaker.hit ai.b (fst coornewlst) false
       | Some s -> begin match ShipMaker.health s with 
           | 0 -> failwith "impossible, hitting sunken ship"
           | 1 -> 
             if (List.length ai.current) = (ShipMaker.size s) &&
                (List.length ai.aside = 0) then begin
               ai.missed <- ((fst coornewlst)::ai.current) @ ai.missed;
-              ai.current <- []; BoardMaker.hit ai.b (fst coornewlst) end 
+              ai.current <- []; BoardMaker.hit ai.b (fst coornewlst) false end 
             else if (List.length ai.current) = (ShipMaker.size s) then begin
               ai.missed <- ((fst coornewlst)::ai.current) @ ai.missed;
               ai.current <- List.hd ai.aside::[]; ai.aside <- List.tl ai.aside;
-              BoardMaker.hit ai.b (fst coornewlst) end else begin
+              BoardMaker.hit ai.b (fst coornewlst) false end else begin
               match fst coornewlst with 
               |(r,c) -> if List.mem (r-1,c) ai.current then
                   special_hit ai coornewlst (ShipMaker.size s) (r-1,c) false
@@ -394,7 +394,7 @@ module AiMaker = struct
                 else failwith "special hit case failed"
             end
           | _ -> ai.current <- (fst coornewlst):: ai.current;
-            BoardMaker.hit ai.b (fst coornewlst)
+            BoardMaker.hit ai.b (fst coornewlst) false
         end
 
   let random_ori () = init_random (); if Random.int 2 = 0 then true else false
