@@ -26,8 +26,8 @@ let switch () =
 (* true is vertical and false is horizonta*)
 
 let normal_ship = ([(0,0);(0,1);(0,2)], "normal ship")
-let square_ship = ([(0,0);(0,1);(1,0);(1,1)], "square ship")
-let l_ship = ([(0,0);(0,1);(0,2);(1,2)], "square ship")
+let square_ship = ([(0,0);(0,1);(0,2);(0,3)], "square ship")
+let l_ship = ([(0,0);(0,1);(0,2);(0,3)], "square ship")
 
 let ship_list = [normal_ship; square_ship; l_ship]
 
