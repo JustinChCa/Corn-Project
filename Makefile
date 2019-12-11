@@ -27,18 +27,11 @@ test:
 bisect-test:
 	BISECT_COVERAGE=YES $(OCAMLBUILD) -tag 'debug' $(TEST) && ./$(TEST) -runner sequential
 
-check:
-	bash checkenv.sh && bash checktypes.sh
-	
-finalcheck: check
-	bash checkzip.sh
-	bash finalcheck.sh
-
 bisect: clean bisect-test
 	bisect-ppx-report -I _build -html report bisect0001.out
 
 zip:
-	zip bs_src.zip *.ml* _tags Makefile Install.md bs.txt
+	zip -r bs_src.zip *.ml* _tags Makefile Install.md assets
 	
 docs: docs-public docs-private
 	
@@ -55,7 +48,7 @@ docs-private: build
 
 clean:
 	ocamlbuild -clean
-	rm -rf bs_src.zip
+	rm -rf bs_src.zip doc.public doc.private report bisect*.out
 
 server:
 	$(OCAMLBUILD) $(SERVER) && ./$(SERVER)
