@@ -59,20 +59,13 @@ let assign_player socc =
 
   !counter
 
-(**[send_to_client out_channel msg] sends the string [msg] to the client using
-   the out channel [out_channel]. Also increments the player counter. *)
-let send_to_client out_channel msg = 
-  output_string out_channel msg; 
-  flush out_channel ;
-  counter := !counter +1
-
 
 let establish_connections sock_addr = 
   listen sock_addr 8;
   while !counter <> 2 do 
     match accept sock_addr |> fst |> assign_player with 
-    | k when k=0-> send_to_client !player1.socket.out_channel "lobby-1\n" 
-    | k when k=1-> send_to_client !player2.socket.out_channel "lobby-2\n"; 
+    | 0
+    | 1  -> counter := !counter +1
     | _ -> ignore(failwith "Invariant Violated! 2 Players Exceeded!");
 
   done
@@ -125,9 +118,6 @@ let print_load_message addr port =
   ()
 
 
-let sock_dom serv_address port_number = 
-  domain_of_sockaddr (ADDR_INET(serv_address,port_number)) 
-
 
 let configure_server () = 
   let get_serv_address = 
@@ -135,8 +125,7 @@ let configure_server () =
     | k -> k.h_addr_list.(0) 
     | exception Not_found -> failwith "Could not find localhost"
   in 
-  let dom_of_sock = sock_dom get_serv_address 8080 in 
-  let socket_addr = socket dom_of_sock SOCK_STREAM 0 in 
+  let socket_addr = socket PF_INET SOCK_STREAM 0 in 
   {
     port_number = 8080;
     serv_addr = get_serv_address;

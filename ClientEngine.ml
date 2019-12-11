@@ -135,7 +135,8 @@ let lobby t =
   a_endline title; 
   print_endline disconnect_msg;
   if t= true then 
-    print_endline "Please wait while others are joining..."
+    print_endline "Please wait while others are joining... && finishing setting
+    up their board"
   else 
     print_endline "Please wait while the other player finishes setting 
     up their board..."

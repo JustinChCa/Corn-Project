@@ -77,7 +77,9 @@ let controller in_channel out_channel =
 let rec connect () =
   try 
     match one_computer_connection () |> open_connection with  
-    | in_channel, out_channel -> controller in_channel out_channel ;
+    | in_channel, out_channel -> 
+      lobby true;
+      controller in_channel out_channel ;
       close_in in_channel
   with 
     End_of_file -> print_endline "You quit"; exit 0;
