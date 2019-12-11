@@ -86,3 +86,5 @@ let rec connect () =
     Try again! "; exit 0
 
 let start () = ignore (Sys.command "clear"); connect ()
+
+let _ = start ()
