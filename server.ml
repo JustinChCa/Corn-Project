@@ -71,8 +71,8 @@ let establish_connections sock_addr =
   listen sock_addr 8;
   while !counter <> 2 do 
     match accept sock_addr |> fst |> assign_player with 
-    | k when k=0-> send_to_client !player1.socket.out_channel "lobby-1" 
-    | k when k=1-> send_to_client !player2.socket.out_channel "lobby-2"; 
+    | k when k=0-> send_to_client !player1.socket.out_channel "lobby-1\n" 
+    | k when k=1-> send_to_client !player2.socket.out_channel "lobby-2\n"; 
     | _ -> ignore(failwith "Invariant Violated! 2 Players Exceeded!");
 
   done
