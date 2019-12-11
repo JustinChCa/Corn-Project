@@ -38,10 +38,10 @@ then those commands will be sent in that order when it is your turn. This is a b
 
 
 
-------------------- IN DEPTH INSTRUCTIONS FOR SINGLEPLAYER -----------------------------------
+------------------- IN DEPTH INSTRUCTIONS FOR SINGLEPLAYER TEXT BASED-----------------------------------
 
 This game requires the packages unix, oUnit, str, and ANSITerminal installed.
-To run, type "make play" in the directory main.ml is in.
+To run, type "make play-text" in the directory main.ml is in.
 
 TL;DR
 
