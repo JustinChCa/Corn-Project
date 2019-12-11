@@ -162,4 +162,4 @@ let main () =
   | Exit -> close_graph ()
   | Graphic_failure s -> close_graph ()
 
-let _ = 0
+let _ = main ()
