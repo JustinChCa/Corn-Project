@@ -178,7 +178,6 @@ let main () =
       |> AiMaker.ai_player_init p1 size ship_list in
     ai_turn (p1, aip, ai)
 
-let _ = main ()
 
 
 
