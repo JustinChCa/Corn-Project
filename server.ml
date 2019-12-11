@@ -56,26 +56,16 @@ let assign_player socc =
      end 
    else 
      player2 := create_player_conn socc "p2");
-  print_endline ((string_of_int (!counter+1)) ^ " players connected");
 
   !counter
-
 
 
 let establish_connections sock_addr = 
   listen sock_addr 8;
   while !counter <> 2 do 
     match accept sock_addr |> fst |> assign_player with 
-    | k when k=0 ->   
-      output_string !player1.socket.out_channel "lobby-1\n"; 
-      flush !player1.socket.out_channel ;
-      counter := !counter +1;
-
-
-    | k when k=1-> output_string !player2.socket.out_channel "lobby-2\n"; 
-      flush !player2.socket.out_channel;       
-      counter := !counter +1;
-
+    | 0
+    | 1  -> counter := !counter +1
     | _ -> ignore(failwith "Invariant Violated! 2 Players Exceeded!");
 
   done
@@ -87,14 +77,14 @@ let issue_command () =
   | Attack -> "attack "
   | Result -> "winner "
 
-(**[control_state id in_channel out_channel] is player [id]'s current turn 
+(**[player_turn name in_channel out_channel] is player [name]'s current turn 
    on the in channel [in_channel] and the out channel [out_channel] for that 
-   player. Tells the server to allow player [id] to issue commands. *)
-let control_state id in_channel out_channel=
+   player. Tells the server to allow player [name] to issue commands. *)
+let player_turn name in_channel out_channel=
   output_string out_channel (issue_command ()^"\n"); flush out_channel;
   let command = input_line in_channel in 
   if String.trim command = "quit" then failwith "quit";
-  let enemy_oc = if id = "p1" then !player2.socket.out_channel else 
+  let enemy_oc = if name = "p1" then !player2.socket.out_channel else 
       !player1.socket.out_channel in 
   output_string enemy_oc (command^"\n"); flush enemy_oc 
 
@@ -104,11 +94,11 @@ let game_service socc =
   while true do
 
     print_endline ("player " ^ !player1.player ^"'s turn");
-    control_state !player1.player !player1.socket.in_channel 
+    player_turn !player1.player !player1.socket.in_channel 
       !player1.socket.out_channel;
 
     print_endline ("player " ^ !player2.player ^"'s turn");
-    control_state !player2.player !player2.socket.in_channel 
+    player_turn !player2.player !player2.socket.in_channel 
       !player2.socket.out_channel;
 
     current_state := Attack
@@ -128,21 +118,16 @@ let print_load_message addr port =
   ()
 
 
-let sock_dom serv_address port_number = 
-  Unix.domain_of_sockaddr (ADDR_INET(serv_address,port_number)) 
-
 
 let configure_server () = 
-  let port_number = 8080 in
   let get_serv_address = 
-    match Unix.gethostname () |> Unix.gethostbyname with
+    match gethostname () |> gethostbyname with
     | k -> k.h_addr_list.(0) 
     | exception Not_found -> failwith "Could not find localhost"
   in 
-  let dom_of_sock = sock_dom get_serv_address port_number in 
-  let socket_addr = socket dom_of_sock SOCK_STREAM 0 in 
+  let socket_addr = socket PF_INET SOCK_STREAM 0 in 
   {
-    port_number = port_number;
+    port_number = 8080;
     serv_addr = get_serv_address;
     socket_addr = socket_addr;
 
@@ -169,3 +154,4 @@ let run_server () =
       starting the server back up again. Deallocating the sockets may take 
       some time... (~1-2 mins max.)"; exit 0
 
+let _ = run_server ()

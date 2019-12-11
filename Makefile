@@ -2,7 +2,7 @@ MODULES=authors ship board gui player command ai client ClientEngine server main
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
-TEXT=main.byte
+TEXT=textgame.byte
 GRAPHIC=main2.byte
 TEST=test.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind -plugin-tag 'package(bisect_ppx-ocamlbuild)'

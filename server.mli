@@ -20,9 +20,6 @@ val run_server: unit -> unit
 *)
 val configure_server: unit -> server 
 
-(**[sock_dom serv_address port_number] is the domain of the socket address
-     [serv_address] and the port [port_number] *)
-val sock_dom: Unix.inet_addr -> int -> Unix.socket_domain
 
 (**[issue_command ()] is the current state of the game in string form *)
 val issue_command: unit -> string

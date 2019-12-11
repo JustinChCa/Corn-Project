@@ -1,11 +1,21 @@
+-----------------------------INSTRUCTIONS FOR SINGLEPLAYER ------------------------------------------------------------
+First, launch a terminal in the directory of the battleship game.
+
+There are two ways of playing this game: the first is make play-graph which boots up the game using graphics. This is relatively easy to follow along with, just follow the on screen instructions. The second is through typing in make make play-text, which loads up the traditional text based version of our game. In both cases, you should be able to follow the on screen instructions for playing the game.
+
+If you'd like in-depth instructions for playing the game, see the "in depth instructions for singleplayer" below, though this may not be necessary.
+
+
+
+
 ----------------------------- INSTRUCTIONS FOR MULTIPLAYER -----------------------------------------------------------------
 To run the multiplayer set up on one computer (as that's how it's currently configured.):
 
 First, you need to launch three terminals in the directory of battleship.
 
-For the first terminal, type in "make server". This will initialize the server with your private/local ip address. The server should tell you what IP address it used in the console. This is the ip address you will use to connect to the server. Note: The server port is 8080
+For the first terminal, type in "make server". This will initialize the server with your private/local ip address. 
 
-For the next two terminals, type in "make client". This will prompt you to enter thr IP address and port of the server. For the ip address, enter the IP address that the server outputted in the previous step. After typing your IP, press enter. You will then be prompted to enter a port. Type in 8080 and press enter. You will know you are connected to the server by the battleship welcome screen that appears after entering in your port and IP address on the client console.
+For the next two terminals, type in "make client". If this server is running, you wll connect to the server and a waiting screen will be displayed.
 
 The first turn belongs to the player who connected first, in your case, it will be the first terminal that connected to the server.
 They will be prompted to set up their 3 ships. To place a ship down, type in the coordinate followed by the orientation (with a space between the coord and the orientation.) The orientation may be typed as either "v" or "vertical" or "h" or "horizontal". 
@@ -28,7 +38,7 @@ then those commands will be sent in that order when it is your turn. This is a b
 
 
 
-------------------- INSTRUCTIONS FOR SINGLEPLAYER -----------------------------------
+------------------- IN DEPTH INSTRUCTIONS FOR SINGLEPLAYER -----------------------------------
 
 This game requires the packages unix, oUnit, str, and ANSITerminal installed.
 To run, type "make play" in the directory main.ml is in.

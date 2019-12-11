@@ -37,9 +37,9 @@ let find_coords line =
 let orientation line =
   match String.trim (String.lowercase_ascii line) with 
   | "v"
-  | "vertical" -> true
+  | "vertical" -> false
   | "h"
-  | "horizontal" -> false
+  | "horizontal" -> true
   | _ -> raise (Invalid_argument "Vertical or Horizontal only.")
 
 
