@@ -61,6 +61,7 @@ let assign_player socc =
   !counter
 
 
+
 let establish_connections sock_addr = 
   listen sock_addr 8;
   while !counter <> 2 do 
@@ -72,11 +73,11 @@ let establish_connections sock_addr =
 
 
     | k when k=1-> output_string !player2.socket.out_channel "lobby-2\n"; 
-      flush !player2.socket.out_channel;       counter := !counter +1;
+      flush !player2.socket.out_channel;       
+      counter := !counter +1;
 
     | _ -> ignore(failwith "Invariant Violated! 2 Players Exceeded!");
 
-      counter := !counter +1;
   done
 
 

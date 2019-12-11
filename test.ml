@@ -60,7 +60,7 @@ let test_board_size name expected_output board =
 
 
 let ship_attack_test name coordinate ship =  
-  name >:: (fun _ ->   Ship.hit coordinate ship false; assert_equal false 
+  name >:: (fun _ ->   ignore (Ship.hit coordinate ship); assert_equal false 
                (Ship.calive coordinate ship))
 
 let exception_test name exc func = 
@@ -124,30 +124,30 @@ let ai_initboard_test name expected_output ai =
 let sink_ship_test name= 
   name >:: (fun _ -> 
 
-      Ship.hit (1,1) ship_destroyer false; 
+      ignore (Ship.hit (1,1) ship_destroyer); 
 
       assert_equal false  (Ship.calive (1,1) ship_destroyer); 
       assert_equal true (Ship.alive ship_destroyer);
       assert_equal 2 (Ship.health ship_destroyer);
       assert_equal true (Player.alive player);
 
-      Ship.hit (1,2) ship_destroyer false; 
+      ignore (Ship.hit (1,2) ship_destroyer); 
       assert_equal false  (Ship.calive (1,2) ship_destroyer);
       assert_equal true  (Ship.alive ship_destroyer);
       assert_equal 1 (Ship.health ship_destroyer);
 
-      Ship.hit (1,3) ship_destroyer false; 
+      ignore (Ship.hit (1,3) ship_destroyer ); 
       assert_equal false  (Ship.calive (1,3) ship_destroyer);
       assert_equal false  (Ship.calive (1,1) ship_destroyer);
       assert_equal false  (Ship.calive (1,2) ship_destroyer);
       assert_equal false  (Ship.alive ship_destroyer);
       assert_equal 0 (Ship.health ship_destroyer);
 
-      Ship.hit (2,1) ship_sub false;
+      ignore (Ship.hit (2,1) ship_sub);
       assert_equal false (Ship.calive (2,1) ship_sub);
       assert_equal true (Ship.alive ship_sub);
 
-      Ship.hit (3,1) ship_sub false;
+      ignore (Ship.hit (3,1) ship_sub );
 
       assert_equal false (Ship.calive (2,1) ship_sub);
       assert_equal false (Ship.calive (3,1) ship_sub);
@@ -160,12 +160,12 @@ let ship_alive_overlap = Ship.create [(1,1)]
 
 let ship_attacked ()= 
   let ship = Ship.create [(0,0)] in 
-  Ship.hit (0,0) ship false; Ship.hit (0,0) ship false
+  ignore (Ship.hit (0,0) ship); Ship.hit (0,0) ship
 
 let ship_missed () = 
   let create_board = (Board.create 10 10) in 
   let _ = Ship.create [(0,0)] |> Board.place_ship create_board  in 
-  Board.hit create_board (2,2) false ; Board.hit create_board (2,2) false
+  ignore (Board.hit create_board (2,2)) ; Board.hit create_board (2,2)
 
 let ship_tests = [
   ship_size_test "size with destroyer is 3" 3 ship_destroyer;
@@ -193,7 +193,7 @@ let ship_tests = [
 
   exception_test "tests that an exception Hitted is raised when a player 
   attacks a coordinate that has already been attacked before." 
-    (Hitted("You have already hit this spot.")) (fun () -> ship_attacked ());
+    (Hitted("This spot has already been hit")) (fun () -> ship_attacked ());
 
   exception_test "tests that an exception Missed is raised when a player 
   misses a coordinate that has already been missed before." 
@@ -237,7 +237,7 @@ let already_missed () =
   let board = Board.create 10 10 in 
   let ship = Ship.create [(1,1)] in 
   let _ = Board.place_ship board ship in 
-  Board.hit board (1,1) false; Board.hit board (1,1) false
+  ignore (Board.hit board (1,1) ); Board.hit board (1,1)
 
 
 let board_tests = [
@@ -279,7 +279,7 @@ let board_tests = [
 
   exception_test "tests whether an exception will be thrown, when attacking a 
   ship thats already been attacked at the coordinate (1,1)" 
-    (Hitted("You have already hit this spot.")) (fun () -> already_missed ())
+    (Hitted("This spot has already been hit")) (fun () -> already_missed ())
 
 
 ]
@@ -288,7 +288,7 @@ let ship_dead () =
   let ship = Ship.create [(0,0)] in 
   let board = Board.create 1 1 in
   let placed_ship = Board.place_ship board ship in 
-  Board.hit board (0,0) false; placed_ship 
+  ignore (Board.hit board (0,0)); placed_ship 
 
 let player_tests = [
   player_getships_test "player has only one ship of coordinate (1,1) in the 
