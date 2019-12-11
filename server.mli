@@ -31,5 +31,5 @@ val create_player_conn: Unix.file_descr -> string -> player
 (**[establish_connections sock_addr] waits until two players have joined
     the server with the socket address [sock_addr]. Records the in_channel and
     out_channel connections for each person who connects to the server. *)  
-val establish_connections: Unix.file_descr -> unit
+val establish_connections: server -> unit
 
