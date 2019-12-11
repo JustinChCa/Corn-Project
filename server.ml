@@ -88,9 +88,9 @@ let player_turn name in_channel out_channel=
       !player1.socket.out_channel in 
   output_string enemy_oc (command^"\n"); flush enemy_oc 
 
-(**[game_service ()] controls the order in which players may issue commands
+(**[bs_service ()] controls the order in which players may issue commands
    i.e. whose turn it is at any given moment on the server socket. *)
-let game_service () =
+let bs_service () =
   while true do
 
     print_endline ("player " ^ !player1.player ^"'s turn");
@@ -141,7 +141,7 @@ let run_server () =
     print_load_message serv_info.serv_addr serv_info.port_number;
     establish_connections serv_info;  
     print_endline "Battleship Game Started...";
-    game_service ();
+    bs_service ();
     close serv_info.socket_addr
   with 
     Unix_error (_,_,_) -> print_endline "The server is still shutting down. 
