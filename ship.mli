@@ -7,8 +7,7 @@ exception Hitted of string
 module type Ship = sig
   (** AF: The list [((y1, x1), b1), ..., ((yn, xn), bn)] represents
         a ship with coordinates represent by the [(y, x)] pairs that
-        may or may not been hit based on their [b]
-      RI: A ship cannot be empty.*)
+        may or may not been hit based on their [b] *)
 
   (** [t] is the type of ships *)
   type t

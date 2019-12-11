@@ -1,5 +1,5 @@
-open Ship
 (** The [Board] module representing a game board.*)
+open Ship
 
 (** [Missed s] is raised when a given coordinate has already been missed.*)
 exception Missed of string
