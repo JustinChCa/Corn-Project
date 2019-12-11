@@ -2,6 +2,7 @@ open Graphics
 open Images
 open Png
 open Board
+open Player
 
 (** [draw_tile x y r s] draws a tile [s] as a circle (color depending on tile)
     with center at [x, y] and radius [r], point is unchanged. *)
@@ -60,6 +61,32 @@ let draw_swap () =
   resize_window 1300 850;
   draw_image g 0 0;
   ignore (wait_next_event [Key_pressed])
+
+let draw_alive_ships player =
+  Graphics.set_font "-*-fixed-medium-r-semicondensed--20-*-*-*-*-*-iso8859-1";
+  set_color white;
+  fill_rect 25 450 100 50;
+  set_color black;
+  draw_rect 25 450 100 100;
+  let (x, y) = text_size (PlayerMaker.get_name player) in
+  moveto (75 - x/2) (537-y/2);
+  draw_string (PlayerMaker.get_name player);
+  let (x, y) = text_size ("ships") in
+  moveto (75 - x/2) (512-y/2);
+  draw_string ("ships");
+  let (x, y) = text_size (string_of_int (PlayerMaker.alive_ships player)) in
+  moveto (75 - x/2) (475-y/2);
+  draw_string (string_of_int (PlayerMaker.alive_ships player))
+
+let draw_backboard board x y size =
+  draw_background ();
+  draw_board board true x y size
+
+let draw_battlefield player enemy x1 y1 x2 y2 size1 size2 =
+  draw_background ();
+  draw_field (PlayerMaker.get_board player) (PlayerMaker.get_board enemy) 
+    x1 y1 x2 y2 size1 size2;
+  draw_alive_ships enemy
 
 (** [endscreen ()] is unit if 'm' is pressed, draws end options and waits.
     Raises Exit if 'q' is pressed. *)

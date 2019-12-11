@@ -2,7 +2,7 @@
 open Ship
 
 module type Board = sig
-  type tile = Miss | Water of ShipMaker.t option
+  type tile
   type t 
   val create: int -> int -> t
   val hit: t -> int * int -> bool
@@ -31,6 +31,8 @@ module BoardMaker = struct
     | Miss -> raise (Missed ("You have already missed this spot."))
     | Water (Some j) -> ShipMaker.hit (y, x) j 
 
+  (** [fold f arr i acc] folds over [arr] with function [f] starting at
+      index [i], [f] must take in the index. *)
   let rec fold f arr i acc =
     match arr.(i) with
     | exception Invalid_argument e -> acc
@@ -41,7 +43,8 @@ module BoardMaker = struct
   let rec h_partition str n = 
     if n > 0 then h_partition (str^"----") (n-1) else str
 
-  (** [opt_to_str x] converts an [opt] to its corresponding string.*)
+  (** [opt_to_str self coor opt] converts an [opt] along with its [coor] to its 
+      corresponding string. In player form iff [self] else enemy form.*)
   let opt_to_str self coor = function
     | Miss -> "| O "
     | Water (None) -> "|   "
@@ -56,6 +59,8 @@ module BoardMaker = struct
     let part = h_partition "-" (Array.length board) in
     List.rev (fold (fun y r acc -> part::str_row self r y::acc) board 0 [part])
 
+  (** [opt_to_c self coor opt] converts an [opt] along with its [coor] to its 
+      corresponding string. In player form iff [self] else enemy form.*)
   let opt_to_c self coor = function
     | Miss -> "m"
     | Water (None) -> "n"
@@ -63,6 +68,8 @@ module BoardMaker = struct
         begin if self then "s" else "n" end 
       else "x"
 
+  (** [list_row self row y] converts [row] using [opt_to_c] and [self] with
+      [y] coordinate.*)
   let list_row self row y =
     Array.mapi (fun x tile -> opt_to_c self (y, x) tile) row
     |> Array.to_list
@@ -91,7 +98,6 @@ module BoardMaker = struct
     |Miss -> failwith "impossible, hit a missed location again"
     |Water (None) -> None
     |Water (Some s) -> Some s
-
 
 end
 

@@ -21,7 +21,8 @@ module ShipMaker = struct
     List.length !ship
 
   let create coor =
-    ref (List.map (fun a -> (a, true)) coor)
+    if coor = [] then failwith "Empty ship" else
+      ref (List.map (fun a -> (a, true)) coor)
 
   (**[print_hit_msg bool] prints a hit message if [bool] is true, else does not
      print out anything. *)

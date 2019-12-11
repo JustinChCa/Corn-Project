@@ -13,6 +13,8 @@ module type Player = sig
 
   val alive: t -> bool
 
+  val alive_ships: t -> int
+
   val get_ships: t -> ShipMaker.t list
 
   val get_board: t -> BoardMaker.t
@@ -39,8 +41,12 @@ module PlayerMaker = struct
       name="dummy";
     }
 
-  let alive player =
-    List.exists (fun a -> ShipMaker.alive a) player.ships
+  let alive t =
+    List.exists (fun a -> ShipMaker.alive a) t.ships
+
+  let alive_ships t =
+    List.fold_left (fun acc a -> if ShipMaker.alive a then acc+1 else acc) 0
+      t.ships
 
   let get_ships t = t.ships
 

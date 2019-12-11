@@ -17,6 +17,7 @@ let ship_list = [normal_ship; square_ship; l_ship]
 (** [ai_list] is a list of ships to use in vs ai game.*)
 let ai_list = ([normal_ship;normal_ship;normal_ship;])
 
+
 (** [enter_string x y line ts limit] draws a string with [ts] size and [limit]-1
     character inputed and returns a string.*)
 let enter_string x y line ts limit =
@@ -80,12 +81,10 @@ let cs_helper ship board coor orient =
     process at lower left corner [x,y] and sides of [wsize] and [board] using
     [bsize] creating and placing ship into [board]. *)
 let rec create_ship (ship, name) board x y wsize bsize =
-  draw_background ();
-  draw_board board true x y wsize;
+  draw_backboard board x y wsize;
   ignore (enter_string 25 700 ("Click a spot to to place " ^ name) 20 0);
   let coord = get_coord x y wsize bsize in
-  draw_background ();
-  draw_board board true x y wsize;
+  draw_backboard board x y wsize;
   ignore (enter_string 25 700 "'v' for vertical, 'h' for horizontal" 20 0);
   let orient = get_ori () in
   try cs_helper ship board coord orient with 
@@ -97,14 +96,11 @@ let rec create_ship (ship, name) board x y wsize bsize =
     creation with name and board input using [nx, ny, bx, by, bsize, ships]. *)
 let create_player nx ny bx by wsize bsize ships =
   let board = BoardMaker.create bsize bsize in
-  draw_background ();
-  draw_board board true bx by wsize;
-  let name = enter_string nx ny "Enter name: " 30 16 in 
-  draw_background ();
-  draw_board board true bx by wsize;
+  draw_backboard board bx by wsize;
+  let name = enter_string nx ny "Enter name: " 30 10 in 
+  draw_backboard board bx by wsize;
   let sl = List.map (fun sn -> create_ship sn board bx by wsize bsize) ships in
-  draw_background ();
-  draw_board board true bx by wsize;
+  draw_backboard board bx by wsize;
   continue 25 700 "This is your board, press any key to continue." 15;
   PlayerMaker.create sl board name
 
@@ -112,9 +108,7 @@ let create_player nx ny bx by wsize bsize ships =
     [enemy] and draws their boards using [x1, y1, size1] and [x2, y2, size2]
     respectively with [bsize] as a guide. *)
 let rec hit player enemy x1 y1 x2 y2 size1 size2 bsize = 
-  draw_background ();
-  draw_field (PlayerMaker.get_board player) (PlayerMaker.get_board enemy) 
-    x1 y1 x2 y2 size1 size2;
+  draw_battlefield player enemy x1 y1 x2 y2 size1 size2;
   ignore (enter_string 25 700 ((PlayerMaker.get_name player) 
                                ^ "'s turn. Click a spot to to hit.") 20 0);
   let coord = get_coord x2 y2 size2 bsize in
@@ -122,9 +116,7 @@ let rec hit player enemy x1 y1 x2 y2 size1 size2 bsize =
     let s = match PlayerMaker.hit enemy coord with
       | true -> "You hit. Press any key to continue."
       | false -> "You missed. Press any key to continue." in
-    draw_background ();
-    draw_field (PlayerMaker.get_board player) (PlayerMaker.get_board enemy) 
-      x1 y1 x2 y2 size1 size2;
+    draw_battlefield player enemy x1 y1 x2 y2 size1 size2;
     continue 25 700 s 15
   with
   | Missed s
@@ -143,8 +135,8 @@ let rec turn player enemy x1 y1 x2 y2 size1 size2 bsize=
   then 
     PlayerMaker.get_name player |> draw_victory
   else 
-    draw_swap (); 
-  turn enemy player x1 y1 x2 y2 size1 size2 bsize
+    (draw_swap (); 
+     turn enemy player x1 y1 x2 y2 size1 size2 bsize)
 
 (** [hit player enemy x1 y1 x2 y2 size1 size2 bsize] modifies [player] and 
     [ai and aip] and draws their boards using [x1, y1, size1] and [x2, y2, size2]

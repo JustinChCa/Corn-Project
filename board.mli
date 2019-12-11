@@ -13,22 +13,31 @@ module type Board = sig
      element of the array must contain an element of type opt.*)
 
   (** type [tile] is the possible types of each space in the board. *)
-  type tile = Miss | Water of ShipMaker.t option
+  type tile
+
+  (** type [t] is the type of [Board]*)
   type t 
 
-  (** [make_board x y] makes a matrix with [x] rows and [y] columns with every 
+  (** [create x y] makes a matrix with [x] rows and [y] columns with every 
       element in the matrix being [Water None]. *)
   val create : int -> int -> t
 
   (** [hit board coord] is true iff the [coord] in [board] contains a [Ship]
-      that has not been hit at [coord] yet.*)
+      that has not been hit at [coord] yet.
+      Raises [Hitted] if the [coor] as already been hit.
+      Raises [Missed] if the [coor] as already been missed
+      Raises [Invalid_argument] is [coor] is out of bounds.**)
   val hit: t -> int * int -> bool
 
   (** [str_board board self] is [board] in string list form with each element
       representing a row, in player form iff self else enemy form.*)
   val str_board: t -> bool -> string list
 
+  (** [to_list board self] is [board] represented as a 2d list of strings
+      representing each element in the [board], in player form iff [self] else
+      enemy form. *)
   val to_list: t -> bool -> string list list
+
   (** [columns b] gives the number of columns in the board [b]. This is equal to
       the size of each row in [b] *)
   val columns: t -> int
