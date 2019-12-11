@@ -11,9 +11,6 @@ type server
    could be in. *)
 type state
 
-(**[start ()] launches the server on the computer of who called it *)
-val start: unit
-
 (**[run_server ()] starts up the server with the hosts local ip address 
    and with a port of 8080.  *)
 val run_server: unit -> unit

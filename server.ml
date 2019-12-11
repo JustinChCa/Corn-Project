@@ -168,5 +168,3 @@ let run_server () =
       starting the server back up again. Deallocating the sockets may take 
       some time... (~1-2 mins max.)"; exit 0
 
-
-let start = run_server ()

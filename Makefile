@@ -1,22 +1,25 @@
-MODULES=authors ship board gui player command ai client ClientEngine server engine main main2
+MODULES=authors ship board gui player command ai client ClientEngine server main main2 
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
-MAIN=engine.byte
+TEXT=main.byte
+GRAPHIC=main2.byte
 TEST=test.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind -plugin-tag 'package(bisect_ppx-ocamlbuild)'
 PKGS=unix,oUnit,str,ANSITerminal,graphics,camlimages.png,camlimages.graphics
 SERVER=server.byte
-CLIENT=client.byte
-GRAPHIC=main2.byte
+
 default: build
 	utop
 
 build:
 	$(OCAMLBUILD) $(OBJECTS)
 
-play:
-	$(OCAMLBUILD) $(MAIN) && ./$(MAIN)
+play-text:
+	$(OCAMLBUILD) $(TEXT) && ./$(TEXT)
+
+play-graph:
+	$(OCAMLBUILD) $(GRAPHIC) && ./$(GRAPHIC)
 	
 test:
 	$(OCAMLBUILD) -tag debug $(TEST) && ./$(TEST)
@@ -57,10 +60,5 @@ clean:
 server:
 	$(OCAMLBUILD) $(SERVER) && ./$(SERVER)
 
-client:
-	$(OCAMLBUILD) $(CLIENT) && ./$(CLIENT)
-
-graphics: 
-	$(OCAMLBUILD) $(GRAPHIC) && ./$(GRAPHIC)
 
 

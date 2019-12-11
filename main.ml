@@ -146,9 +146,8 @@ let rec choose_gamemode () =
 *)
 let rec ai_turn (p1,ai_player,ai) = 
   hit p1 ai_player;
-  print_double (PlayerMaker.get_board p1) (PlayerMaker.get_board ai_player); 
-
   Ai.AiMaker.hit ai (ShipMaker.get_largest (PlayerMaker.get_ships p1) 0);
+  print_double (PlayerMaker.get_board p1) (PlayerMaker.get_board ai_player); 
   ignore (read_line (a_endline "Enter to continue.")); 
   if not (PlayerMaker.alive ai_player) then 
     a_endline (PlayerMaker.get_name p1 ^ " wins.")
@@ -156,18 +155,6 @@ let rec ai_turn (p1,ai_player,ai) =
     a_endline (PlayerMaker.get_name ai_player ^ " wins.")
   else 
     ai_turn (p1, ai_player,ai)
-
-(**[ai_initializer size] is a three element tuple that contains the created AI
-   with board size [board], the AI Player type, and also the player created by 
-   asking the player to place down their ships with a board size of [size].*)
-let ai_initializer size ships diff= 
-  let p1 = create_player size ships in 
-  let board = BoardMaker.create size size in
-  let ships = List.map (fun (s,n) -> AiMaker.ai_create_ship s board) ships in 
-  let ai = Ai.AiMaker.ai_init diff 
-      (PlayerMaker.get_board p1) board ships in 
-  let ai_player = PlayerMaker.create ships board "AI" in 
-  p1, ai_player, ai
 
 (**[prompt_ai_difficulty ()] is the integer which corresponds to the AI 
    difficulty that the player has chosen. *)
@@ -181,14 +168,17 @@ let main () =
   ignore (Sys.command "clear");
   let size = get_size () in
   let mode = choose_gamemode () in
+  let p1 = create_player size ship_list in
   if mode then 
-    let p1 = create_player size ship_list
-    and p2 = switch (); create_player size ship_list in
+    let p2 = switch (); create_player size ship_list in
     turn (p1, p2)
   else 
-    prompt_ai_difficulty () |> ai_initializer size ship_list |> ai_turn 
+    let (aip, ai) = 
+      prompt_ai_difficulty () 
+      |> AiMaker.ai_player_init p1 size ship_list in
+    ai_turn (p1, aip, ai)
 
-let _ = main ()
+let _ = 0
 
 
 

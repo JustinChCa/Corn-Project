@@ -3,6 +3,8 @@ open Images
 open Png
 open Board
 
+(** [draw_tile x y r s] draws a tile [s] as a circle (color depending on tile)
+    with center at [x, y] and radius [r], point is unchanged. *)
 let draw_tile x y r = function
   | "m" -> set_color blue; 
     fill_circle x y r;
@@ -22,6 +24,8 @@ let draw_tile x y r = function
     draw_circle x y r
   | _ -> failwith "should not happen"
 
+(** [draw_row x y side row] draws a [row] of tiles scaling by [side] with 
+    first circle center at [x, y], point is unchanged. *)
 let draw_row x y side row =
   List.iteri (fun i s -> draw_tile (x+(side/2)+(i*side)) y (side/3) s) row
 
@@ -57,10 +61,12 @@ let draw_swap () =
   draw_image g 0 0;
   ignore (wait_next_event [Key_pressed])
 
+(** [endscreen ()] is unit if 'm' is pressed, draws end options and waits.
+    Raises Exit if 'q' is pressed. *)
 let rec endscreen () = 
   Graphics.set_font "-*-fixed-medium-r-semicondensed--50-*-*-*-*-*-iso8859-1";
-  moveto 324 100;
-  draw_string "Press m to go back to main menu or q to quit";
+  moveto 124 100;
+  draw_string "(M)ain Menu      (Q)uit";
   match (wait_next_event [Key_pressed]).key with
   | 'q' -> raise Exit
   | 'm' -> ()

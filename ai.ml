@@ -12,6 +12,9 @@ module type Ai = sig
   val get_ships: t -> ShipMaker.t list
   val alive: t -> bool
   val ai_create_ship: (int * int) list -> Board.BoardMaker.t -> Ship.ShipMaker.t
+  val ai_player_init: Player.PlayerMaker.t -> int -> 
+    ((int * int) list * 'a) list -> int -> 
+    Player.PlayerMaker.t * t
 end
 
 module AiMaker = struct
@@ -420,4 +423,12 @@ module AiMaker = struct
   let get_ships ai = ai.ships
 
   let alive ai = List.exists (fun a -> ShipMaker.alive a) ai.ships
+
+  let ai_player_init player size ships diff= 
+    let board = BoardMaker.create size size in
+    let ships = List.map (fun (s,n) -> ai_create_ship s board) ships in 
+    let ai = ai_init diff 
+        (PlayerMaker.get_board player) board ships in 
+    let ai_player = PlayerMaker.create ships board "AI" in 
+    ai_player, ai
 end

@@ -1,7 +1,7 @@
 #directory "_build";;
 #require "str";;
 #require "ANSITerminal";;
-#require "OUnit2";;
+#require "oUnit2";;
 #require "graphics";;
 #require "camlimages.png";;
 #require "camlimages.graphics";;
@@ -9,13 +9,13 @@
 #load_rec "command.cmo";;
 #load_rec "ship.cmo";;
 #load_rec "player.cmo";;
-#load_rec "main.cmo";;
+#load_rec "ai.cmo"
 #load_rec "gui.cmo";;
 #load_rec "ClientEngine.cmo";;
 #load_rec "client.cmo";;
 #load_rec "server.cmo";;
 #load_rec "engine.cmo";;
-#load_rec "ai.cmo"
+#load_rec "main.cmo";;
 #load_rec "main2.cmo";;
 
 

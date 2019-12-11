@@ -9,9 +9,11 @@ open Ai
 (* (y,x)*)
 let normal_ship = ([(0,0);(0,1);(0,2)], "normal ship")
 let square_ship = ([(0,0);(0,1);(1,0);(1,1)], "square ship")
-let l_ship = ([(0,0);(0,1);(0,2);(1,2)], "square ship")
+let l_ship = ([(0,0);(0,1);(0,2);(1,2)], "L ship")
 
 let ship_list = [normal_ship; square_ship; l_ship]
+let ai_list = ([normal_ship;normal_ship;normal_ship;])
+
 
 let enter_string x y line ts limit =
   let rec build x =
@@ -42,15 +44,15 @@ let rec get_ori () =
   | 'v' -> false
   | _ -> get_ori () 
 
-let rec get_size () = 
+let rec get_int string l h lim= 
   draw_background ();
-  match int_of_string (enter_string 25 700 "Enter size (10-26): " 40 2) with
-  | i when i > 9 && i < 27 -> i
-  | i -> get_size ()
-  | exception Failure s -> get_size ()
+  match int_of_string (enter_string 25 700 string 30 lim) with
+  | i when i > l && i < h -> i
+  | i -> get_int string l h lim
+  | exception Failure s -> get_int string l h lim
 
-let continue x y line =
-  ignore (enter_string x y line 20 0);
+let continue x y line ts=
+  ignore (enter_string x y line ts 0);
   ignore (wait_next_event [Key_pressed])
 
 let cs_helper ship board coor orient =
@@ -70,7 +72,7 @@ let rec create_ship (ship, name) board x y wsize bsize =
   let orient = get_ori () in
   try cs_helper ship board coord orient with 
   | Invalid_argument s
-  | Taken s -> continue 25 650 (s ^ " Press any key to continue.");
+  | Taken s -> continue 25 650 (s ^ " Press any key to continue.") 15;
     create_ship (ship, name) board x y wsize bsize
 
 let create_player nx ny bx by wsize bsize ships =
@@ -83,10 +85,10 @@ let create_player nx ny bx by wsize bsize ships =
   let sl = List.map (fun sn -> create_ship sn board bx by wsize bsize) ships in
   draw_background ();
   draw_board board true bx by wsize;
-  continue 25 700 "This is your board, press any key to continue.";
+  continue 25 700 "This is your board, press any key to continue." 15;
   PlayerMaker.create sl board name
 
-let rec hit player enemy x1 y1 x2 y2 size1 size2 bsize= 
+let rec hit player enemy x1 y1 x2 y2 size1 size2 bsize = 
   draw_background ();
   draw_field (PlayerMaker.get_board player) (PlayerMaker.get_board enemy) 
     x1 y1 x2 y2 size1 size2;
@@ -100,37 +102,53 @@ let rec hit player enemy x1 y1 x2 y2 size1 size2 bsize=
     draw_background ();
     draw_field (PlayerMaker.get_board player) (PlayerMaker.get_board enemy) 
       x1 y1 x2 y2 size1 size2;
-    continue 25 700 s
+    continue 25 700 s 15
   with
   | Missed s
   | Invalid_argument s
   | Hitted s -> 
-    continue 25 650 (s ^ " Press any key to continue.");
+    continue 25 650 (s ^ " Press any key to continue.") 15;
     hit player enemy x1 y1 x2 y2 size1 size2 bsize
 
 let rec turn player enemy x1 y1 x2 y2 size1 size2 bsize=
   hit player enemy x1 y1 x2 y2 size1 size2 bsize;
-  ignore (wait_next_event [Key_pressed]);
   if not (PlayerMaker.alive enemy) 
   then 
-    player
+    PlayerMaker.get_name player |> draw_victory
   else 
-    (draw_swap (); 
-     turn enemy player x1 y1 x2 y2 size1 size2 bsize)
+    draw_swap (); 
+  turn enemy player x1 y1 x2 y2 size1 size2 bsize
+
+let rec ai_turn p aip ai x1 y1 x2 y2 size1 size2 bsize = 
+  hit p aip x1 y1 x2 y2 size1 size2 bsize;
+  Ai.AiMaker.hit ai (ShipMaker.get_largest (PlayerMaker.get_ships p) 0);
+  if not (PlayerMaker.alive aip) then 
+    PlayerMaker.get_name p |> draw_victory
+  else if not (PlayerMaker.alive p) then
+    PlayerMaker.get_name p |> draw_defeat
+  else 
+    ai_turn p aip ai x1 y1 x2 y2 size1 size2 bsize
 
 let local () = 
-  let size = get_size () in
+  let size = get_int "Enter size (10-26): " 9 27 2 in
   let player1 = create_player 25 700 475 25 800 size ship_list in
   draw_swap ();
   let player2 = create_player 25 700 475 25 800 size ship_list in 
   draw_swap ();
   turn player1 player2 25 25 475 25 400 800 size
 
+let aigame () =
+  let diff = get_int "Enter AI difficulty (1-4): " 0 5 1 in 
+  let size = get_int "Enter size (10-26): " 9 27 2 in
+  let player = create_player 25 700 475 25 800 size ai_list in
+  let (aip, ai) = AiMaker.ai_player_init player size ai_list diff in
+  ai_turn player aip ai 25 25 475 25 400 800 size
+
 let rec mainmenu () = 
   draw_main_menu ();
   match read_key () with
-  | 'w' -> local () |> PlayerMaker.get_name |> draw_victory 
-  | 'a' -> failwith "not implemented"
+  | 'w' -> local () 
+  | 'a' -> aigame () 
   | 's' -> failwith "not implemented"
   | _ -> mainmenu ()
 
@@ -144,4 +162,4 @@ let main () =
   | Exit -> close_graph ()
   | Graphic_failure s -> close_graph ()
 
-let _ = main ()
+let _ = 0
