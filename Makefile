@@ -8,6 +8,7 @@ TEST=test.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind -plugin-tag 'package(bisect_ppx-ocamlbuild)'
 PKGS=unix,oUnit,str,ANSITerminal,graphics,camlimages.png,camlimages.graphics
 SERVER=server.byte
+CLIENT=client.byte
 
 default: build
 	utop
@@ -52,6 +53,9 @@ clean:
 
 server:
 	$(OCAMLBUILD) $(SERVER) && ./$(SERVER)
+
+client:
+	$(OCAMLBUILD) $(CLIENT) && ./$(CLIENT)
 
 
 
