@@ -175,7 +175,6 @@ let rec mainmenu () =
   match read_key () with
   | 'w' -> local () 
   | 'a' -> aigame () 
-  | 's' -> failwith "not implemented"
   | _ -> mainmenu ()
 
 (** [main ()] runs the mainloop of the game.*)

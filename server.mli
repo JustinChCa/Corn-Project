@@ -1,3 +1,5 @@
+(** The [Server] module for creating a server to client connection.*)
+
 (**Represents an in_channel and an out_channel *)
 type socket
 

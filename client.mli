@@ -1,3 +1,5 @@
+(** The [Client] module for creating a client to server connection.*)
+
 
 (**[start] initalizes the server when a user types make server in
     the terminal. *)

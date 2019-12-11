@@ -1,6 +1,8 @@
 open Ship
 open Board
 
+(** The [Player] module representing a player.*)
+
 module type Player = sig 
   (** type [t] is the type of [Player]*)
   type t 

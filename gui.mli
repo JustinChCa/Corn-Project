@@ -1,3 +1,5 @@
+(** The [Gui] module for drawing onto the graphics screen. *)
+
 (** [draw_board board self x y size] draws [board] with lower left corner at
     [x, y] and [width = height = size]. *)
 val draw_board : Board.BoardMaker.t -> bool -> int -> int -> int -> unit

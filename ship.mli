@@ -1,7 +1,6 @@
-(** Ship builder *)
+(** The [Ship] module representing a ship. *)
 
-(** [coor] represents a coordination in the form of Letter-Number *)
-
+(** [Hitted s] is raised when a given coordinate has already been hit. *)
 exception Hitted of string
 
 (** A [Ship] has coordinates that have possibly been hit. *)

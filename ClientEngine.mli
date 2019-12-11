@@ -1,3 +1,5 @@
+(** The [ClientEngine] module for running the online version of battleship. *)
+
 (**[create_enemy_player size ships args] creates an enemy player with a board 
    size of [size] and a ships list of [ships] at coordinate positions [args] *)
 val create_enemy_player: int -> ((int * int) list * 'a) list -> string list -> 

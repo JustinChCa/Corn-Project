@@ -1,3 +1,4 @@
+(** The [Main] module for running the text based version of battleship. *)
 
 (**[print_double b1 b2] displays the player's current board [b1] and the
    hits/misses made to the enemy's board [b2] *)

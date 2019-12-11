@@ -1,8 +1,12 @@
 open Ship
+(** The [Board] module representing a game board.*)
 
-
+(** [Missed s] is raised when a given coordinate has already been missed.*)
 exception Missed of string
+
+(** [Taken s] is raised when a given coordinate is already filled.*)
 exception Taken of string
+
 
 module type Board = sig
   (**AF: The array [| r1; r2; r3; r4;... |] is the array of the row arrays

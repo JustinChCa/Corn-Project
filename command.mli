@@ -1,10 +1,13 @@
+(** The [Command] module for interpreting actions in text version*)
+
 (**[orientation] represents the orientation of the desired ship*)
 type orientation
 
 (**[command] represents the types of valid commands in the game engine. *)
 type command
 
-(**Raised when a given cordinate cannot be numericaly represented. *)
+(** [BadCoord s] is raised when a given coordinate cannot be numericaly 
+    represented. *)
 exception BadCoord of string
 
 (**[find_coords str] is the tuple integer representation of the string 

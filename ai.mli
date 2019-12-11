@@ -3,6 +3,8 @@ open Random
 open Board
 open Ship
 
+(** The [Ai] module for representing an Ai player.*)
+
 module type Ai = sig
   (** AF: the type represents the difficulty of the ai with the list of 
       coordinates the ai has missed or sunk ships and the list of coordinates 
