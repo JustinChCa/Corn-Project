@@ -356,15 +356,15 @@ let command_tests = [
     (27,5) "ab6";
 
   command_orientation_test "Tests orientation vertical orientation; 
-    should return true" true "vertical";
+    should return false" false "vertical";
   command_orientation_test "tests vertical orientation with string 'v'; 
-  should return true." true "v";
+  should return false." false "v";
   command_orientation_test "tests horizontal orientation with string 'h'; 
-  should return false." false "h";
+  should return true." true "h";
   command_orientation_test "Tests horizontal orientation; full word; 
-    should return false" false "horizontal";
+    should return true" true "horizontal";
   command_orientation_test "Tests vertical orientation with white space;
-    should return true" true "    vertical    ";
+    should return false" false "    vertical    ";
 
   exception_test "tests whether an exception will be thrown, given a bad input
   to the command orientation function" 
