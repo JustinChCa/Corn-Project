@@ -1,7 +1,7 @@
 -----------------------------INSTRUCTIONS FOR SINGLEPLAYER ------------------------------------------------------------
 First, launch a terminal in the directory of the battleship game.
 
-There are two ways of playing this game: the first is make play-graph which boots up the game using graphics. This is relatively easy to follow along with, just follow the on screen instructions. The second is through typing in make make play-text, which loads up the traditional text based version of our game. In both cases, you should be able to follow the on screen instructions for playing the game.
+There are two ways of playing this game: the first is make play-graph which boots up the game using graphics. This is relatively easy to follow along with, just follow the on screen instructions. The second is through typing in make play-text, which loads up the traditional text based version of our game. In both cases, you should be able to follow the on screen instructions for playing the game.
 
 If you'd like in-depth instructions for playing the game, see the "in depth instructions for singleplayer" below, though this may not be necessary.
 
