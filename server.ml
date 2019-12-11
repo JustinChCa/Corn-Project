@@ -60,10 +60,10 @@ let assign_player socc =
   !counter
 
 
-let establish_connections sock_addr = 
-  listen sock_addr 8;
+let establish_connections server = 
+  listen server.socket_addr 8;
   while !counter <> 2 do 
-    match accept sock_addr |> fst |> assign_player with 
+    match accept server.socket_addr |> fst |> assign_player with 
     | 0
     | 1  -> counter := !counter +1
     | _ -> ignore(failwith "Invariant Violated! 2 Players Exceeded!");
@@ -88,9 +88,9 @@ let player_turn name in_channel out_channel=
       !player1.socket.out_channel in 
   output_string enemy_oc (command^"\n"); flush enemy_oc 
 
-(**[game_service socc] controls the order in which players may issue commands
-   i.e. whose turn it is at any given moment on the server socket [socc] *)
-let game_service socc =
+(**[game_service ()] controls the order in which players may issue commands
+   i.e. whose turn it is at any given moment on the server socket. *)
+let game_service () =
   while true do
 
     print_endline ("player " ^ !player1.player ^"'s turn");
@@ -125,11 +125,10 @@ let configure_server () =
     | k -> k.h_addr_list.(0) 
     | exception Not_found -> failwith "Could not find localhost"
   in 
-  let socket_addr = socket PF_INET SOCK_STREAM 0 in 
   {
     port_number = 8080;
     serv_addr = get_serv_address;
-    socket_addr = socket_addr;
+    socket_addr = socket PF_INET SOCK_STREAM 0 ;
 
   }
 
@@ -140,9 +139,9 @@ let run_server () =
     bind serv_info.socket_addr 
       (ADDR_INET(serv_info.serv_addr,serv_info.port_number));
     print_load_message serv_info.serv_addr serv_info.port_number;
-    establish_connections serv_info.socket_addr;  
+    establish_connections serv_info;  
     print_endline "Battleship Game Started...";
-    game_service serv_info.socket_addr;
+    game_service ();
     close serv_info.socket_addr
   with 
     Unix_error (_,_,_) -> print_endline "The server is still shutting down. 
